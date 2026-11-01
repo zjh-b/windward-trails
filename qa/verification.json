@@ -1,0 +1,248 @@
+{
+  "verified_at_utc": "2026-11-01T14:08:36.703951+00:00",
+  "passed": true,
+  "core_tests": "✔ a playable game starts with three hearts and stable ground contact (6.2335ms)\n✔ holding jump reaches higher than a short tap; cannot jump in midair (0.5637ms)\n✔ a jump shortly after leaving a ledge is accepted (0.5653ms)\n✔ jump buffering jumps when the player lands (0.1845ms)\n✔ coins cannot be collected twice after respawning (0.5243ms)\n✔ descending onto an enemy stomps it and bounces the player (0.3261ms)\n✔ damage respawns at a checkpoint with immunity; three hits end the attempt (0.5374ms)\n✔ pausing freezes simulation and retry clears transient state (0.4367ms)\n✔ all required routes are traversable with actual movement and jumps (44.7016ms)\n✔ ordinary running speed is enough for every mandatory gap (20.8667ms)\n✔ a rider follows the moving platform without falling through it (0.2612ms)\n✔ six distinct maps can be selected, with safe checkpoint landing positions (1.3943ms)\n✔ character choice changes real speed and jump height while retaining common collision size (0.3089ms)\n✔ retry, preview and continuing beyond the alpine map preserve the selected character (0.3534ms)\n✔ unknown characters and malformed level choices fall back to valid playable content (0.1466ms)\n✔ all eighteen character and map combinations can finish at ordinary speed (42.2246ms)\nℹ tests 16\nℹ suites 0\nℹ pass 16\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 195.2379\n",
+  "javascript_syntax": "passed",
+  "python_launcher_http_and_asset": "passed",
+  "browser": {
+    "passed": true,
+    "contract_only": false,
+    "verified_at_utc": "2026-11-01T14:07:39.467856+00:00",
+    "checks": [
+      "six map selectors, three characters and ability description",
+      "character/map persistence, ability description, direct sixth-map entry and corrupt preference/Infinity record fallback",
+      "real keyboard movement and jump",
+      "pause freezes physics, repeated help click, help Escape and correct resume state",
+      {
+        "keyboard_completed_stage": 0,
+        "state": {
+          "status": "levelComplete",
+          "x": 4400.395833333333,
+          "y": 500,
+          "vy": 0,
+          "grounded": true,
+          "hearts": 1,
+          "coins": 47,
+          "time": 15.633333333333086,
+          "index": 0,
+          "character": "hero"
+        }
+      },
+      {
+        "keyboard_completed_stage": 1,
+        "state": {
+          "status": "levelComplete",
+          "x": 4402.665406244234,
+          "y": 500,
+          "vy": 0,
+          "grounded": true,
+          "hearts": 2,
+          "coins": 34,
+          "time": 13.374999999999881,
+          "index": 1,
+          "character": "hero"
+        }
+      },
+      {
+        "keyboard_completed_stage": 2,
+        "state": {
+          "status": "levelComplete",
+          "x": 4400.556436430369,
+          "y": 500,
+          "vy": 0,
+          "grounded": true,
+          "hearts": 3,
+          "coins": 33,
+          "time": 10.675000000000034,
+          "index": 2,
+          "character": "hero"
+        }
+      },
+      {
+        "keyboard_completed_stage": 3,
+        "state": {
+          "status": "levelComplete",
+          "x": 4203.395833333334,
+          "y": 272.0833333333328,
+          "vy": -260,
+          "grounded": false,
+          "hearts": 3,
+          "coins": 47,
+          "time": 10.183333333333396,
+          "index": 3,
+          "character": "hero"
+        }
+      },
+      {
+        "keyboard_completed_stage": 4,
+        "state": {
+          "status": "levelComplete",
+          "x": 4701.395833333333,
+          "y": 413.958333333332,
+          "vy": 370,
+          "grounded": false,
+          "hearts": 2,
+          "coins": 31,
+          "time": 13.116666666666562,
+          "index": 4,
+          "character": "hero"
+        }
+      },
+      {
+        "keyboard_completed_stage": 5,
+        "state": {
+          "status": "won",
+          "x": 5000.895833333333,
+          "y": 413.958333333332,
+          "vy": 370,
+          "grounded": false,
+          "hearts": 2,
+          "coins": 47,
+          "time": 13.699999999999863,
+          "index": 5,
+          "character": "hero"
+        }
+      },
+      "six-stage campaign, restart, focus-loss pause and persistent completion markers",
+      {
+        "offline_entry_images_and_audio": {
+          "images": [
+            {
+              "file": "bg-grassland.jpg",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "file": "bg-forest.jpg",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "file": "bg-alpine.jpg",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "file": "bg-lagoon.jpg",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "file": "bg-desert.jpg",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "file": "bg-cavern.jpg",
+              "width": 1920,
+              "height": 1080
+            },
+            {
+              "file": "hero.png",
+              "width": 1332,
+              "height": 229
+            },
+            {
+              "file": "cat.png",
+              "width": 2292,
+              "height": 134
+            },
+            {
+              "file": "ranger.png",
+              "width": 1332,
+              "height": 245
+            },
+            {
+              "file": "mage.png",
+              "width": 1128,
+              "height": 232
+            }
+          ],
+          "audio": [
+            {
+              "name": "grassland",
+              "duration": 20
+            },
+            {
+              "name": "forest",
+              "duration": 20
+            },
+            {
+              "name": "alpine",
+              "duration": 20
+            }
+          ]
+        }
+      },
+      "mobile: accessible start, simultaneous move/jump, released touch and no overflow",
+      "landscape: accessible start, simultaneous move/jump, released touch and no overflow"
+    ],
+    "console_errors": [],
+    "resource_errors": [],
+    "failure": null,
+    "source_sha256": {
+      "index.html": "edbb155ae5425fb9da62e9b4f674f409abc44c8c121ce9cb9d36206f8c48bcb1",
+      "style.css": "798766e4b8dcee0538494d562f919bf7adff8b03091201d181f3830b3e079fd9",
+      "core.js": "ac1a94f740c0f2185a09d9c3f0b6120020a03e1e93c09988704485d0c6f5de0a",
+      "game.js": "558aa28764d4d2dbb207a56a165a88fea2a83bc0c5402db7366db57c6977f55f",
+      "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
+    }
+  },
+  "archive": "windward_trails_game_v2.zip",
+  "sha256": {
+    "index.html": "edbb155ae5425fb9da62e9b4f674f409abc44c8c121ce9cb9d36206f8c48bcb1",
+    "style.css": "798766e4b8dcee0538494d562f919bf7adff8b03091201d181f3830b3e079fd9",
+    "core.js": "ac1a94f740c0f2185a09d9c3f0b6120020a03e1e93c09988704485d0c6f5de0a",
+    "game.js": "558aa28764d4d2dbb207a56a165a88fea2a83bc0c5402db7366db57c6977f55f",
+    "README.md": "64ed42415dd62c6c7d564c9bf393edcaace1f0a97fa0d3ebc7b23d09b7b93fb4",
+    "DESIGN.md": "6246656dc67054376d5f60e85a0ab9c8e0657ceb86e0668cbd3506b96e951a27",
+    "PLAN.md": "3980537f97a8af87255abaee6295b926b6cf71e3be18781c8be97c0e2d25ea5d",
+    "run_game.py": "72055a6eee5b8fd978e75012e2e7a5dc060972f8023fc53c1f92b6902a28ec13",
+    "Start Game.cmd": "1ad9aeab53163f4783ef365e13ac34eb4628309ced80fdb24a84917914b7d242",
+    "export_assets.py": "48803dd6107d0cd98f6e420b4a4ce463fdc5ff2b664ff1b0dc3489f43eb4736d",
+    "pack_assets.py": "896dff75e2fbb5fe8871e17138af8bd7116851a34d917d22bacb84632bb36319",
+    "package_game.py": "ab7a64677949a9a918ea33fc357f06f42540814033df0a183b8c80acaa7d06fa",
+    "EXPANSION.md": "da42570e08f9547f66828e153fd5f347c4d3b335fcff76724a9c47bae8e5da28",
+    "export_expansion.py": "7f143d8a999d1e57880520a29ecb04fe3e0a5e7c05cfbc7684531ddb6facf284",
+    "pack_expansion.py": "8514576b9fa2eaa7906c683c02f1854d8baeaa4d28915b538ad286511f6d5e97",
+    ".gitignore": "828b35936525c1295db7412c3f0b06e17617630bfefaeef2b0dcd27d6910c7b1",
+    ".nojekyll": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "assets/alpine.mp3": "64330763b48d1a0843795436fa9a174fbbc867c727867e62ba8968dbc92be664",
+    "assets/bg-alpine.jpg": "ed0b8b61a3a9d5733d3ae5cc656fbe021187159df508a54b491763e54dcaa0e8",
+    "assets/bg-cavern.jpg": "3f842ccfe17c1de8e51c19001c7b6fe98e1a9bf5487fb1e8a37c72b087b24c86",
+    "assets/bg-desert.jpg": "f171ec3fa96e2b4cb42fa6b661e949d3533b6a41953a2bb485ca5744256f42f3",
+    "assets/bg-forest.jpg": "7d1ce0f8304e35ad78a5b81aa8b774de4bfab2f140f3659e52f50bbf94715b1e",
+    "assets/bg-grassland.jpg": "1236d279f3ff754cc80443719ea3b5a27eee3e46e52cce5d4b447527a5fcb333",
+    "assets/bg-lagoon.jpg": "dbac65d1135d21609748fac29a7e344e344ae94ab23fe834f5ec4c272c0e5931",
+    "assets/cat.png": "239c95bd68dc7717ca14df1fd7ed0a64467ea80efb09bc5fc643e8932295d752",
+    "assets/forest.mp3": "6c4d82fcbb29d883023604d03ed34175d9702dd48b2630c7812e9fb65152db89",
+    "assets/grassland.mp3": "04b3d535bc483d2f6920bc9995a9b27c5f451e9d7762512389890e3ed02d6282",
+    "assets/hero.png": "ccec47f4ab1ff348cc6c1dd5aaf32eb05b9ce98f8363e5776137c961e24f9e9d",
+    "assets/mage-portrait.png": "675e970e8a37733c7495275beb5ab24691b42b61b4753e81f7d82c385a801ac6",
+    "assets/mage.png": "d5b2c40af161ed12a5a82e663dbc2645fa4da97a7bdd958edf9d629e1ffaf64b",
+    "assets/ranger-portrait.png": "0b6cbb7fe3a8463ea428931569db6ad66309f9428bf4bf571162be2f82a64ddb",
+    "assets/ranger.png": "2e5de40fbd46d3d3098ca16a5ad1b68cd951995923d6c07665e0e0ef8c291d39",
+    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4",
+    "tests/browser_qa.py": "676388de44fd981b53f8f289759f853c6f4cfb61ca4ecacb20edd28218d92688",
+    "tests/core.test.cjs": "24ba1220fa13876f824f944586c833dfe35b92331b369567b41e4db1e9f6bd31",
+    "qa/alpine-play.png": "198133d3d07df8f12cddddb7c6bf5d06c454e1fdfc4e3cbb7bcfb5615cd37d8f",
+    "qa/browser-verification.json": "1e19f171e9b7cfe46f18be65718dc3a78b64dc3523b68cded2f1eb5136ee8ef5",
+    "qa/cavern-play.png": "384d4341e9e78ed7424939c3d9c0ad2f206a8fc4463d83fce18bc17e273f2391",
+    "qa/completed-0.png": "cf8d5e554925800985d4c8f8bd28b1f801bc8aa0e0957e45ab91a4795f37ae5f",
+    "qa/completed-1.png": "c93fbfd38cd4513f5536d97f4ca09bae2ce762c16bb030a5ecf2d5c17a582a19",
+    "qa/completed-2.png": "f05724f91ab7c4b22fc69470cab06fa012865f92a7ad1a625d94767e2be7af14",
+    "qa/completed-3.png": "3ea387452f0843abf77043f61a2c2f68b308e006d620c8cac8be12a194629d5f",
+    "qa/completed-4.png": "93496ca0db832b2301459e74cad7e73957cffbe3611f373e24a982b591fb1596",
+    "qa/completed-5.png": "810c9f1a2405b8e400197f00ee42a4ae6c7cb092089a8fe18f0aa4e166d03ed3",
+    "qa/desert-play.png": "2103172a05574029d645b623044391362ee1b9a215854c14aa30de23dab6d714",
+    "qa/forest-play.png": "0752e0ffd2d1a3f949fc235a67ac672762d8ad2d8021d4a89d7b9ea047f040d3",
+    "qa/grassland-play.png": "12f3a162334ea1ce984e1b0a06b40c4f1e3fcca73e3c939c99e36b8dd53e9487",
+    "qa/lagoon-play.png": "572e9164fb480f9f01de193432484c1f66882273d4ceecac12d78e14c1a528ca",
+    "qa/landscape-play.png": "6fc5cf6b4b45775b9d6b94fe6b16efa6796cac1cca62fd51abeba970765c74ea",
+    "qa/landscape-title.png": "3fc2402f528dfc7b1d0111dd79875720bc2f70b62b5fe73d3b0338aa7aabf1fc",
+    "qa/mage-desert-play.png": "0e6f66c23535d2a3460294f690755a14a3d20e757334972b4b862efcac4f7fb7",
+    "qa/mobile-play.png": "c4dc917568f5ae860554b4041eaca9775f9c0b57488a996f215eb19189ca94ba",
+    "qa/mobile-title.png": "3b841cd8983d324c8cf1c6fc58ed62229513f8aac55b30759927e2a1bd9b41a1",
+    "qa/title.png": "6b68dcc99e6b90fadef58458446f03e9ce5787a41e334f39dfbff2238206ad77"
+  }
+}

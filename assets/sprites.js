@@ -1,0 +1,1 @@
+window.SPRITES = {"hero": {"width": 111, "height": 229, "frames": 12}, "cat": {"width": 191, "height": 134, "frames": 12}, "ranger": {"width": 111, "height": 245, "frames": 12}, "mage": {"width": 94, "height": 232, "frames": 12}};

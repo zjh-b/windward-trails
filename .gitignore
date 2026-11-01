@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.log
+.env
+.env.*
+assets/raw/
+qa/failure-*.png
+*.zip
+.DS_Store
+Thumbs.db

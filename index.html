@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#152c25">
+  <title>风野奇旅 · 远行篇</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23152c25'/%3E%3Cpath d='M14 48Q18 14 50 12Q51 42 14 48Z' fill='%23d4dfa6'/%3E%3Cpath d='M15 49L42 24' stroke='%23152c25' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="appbar">
+    <button id="home" class="brand" aria-label="回到标题画面"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 26C5 11 16 5 27 5C29 19 19 27 5 26Z"/><path d="m5 27 16-16"/></svg><span>风野奇旅</span><small>WINDWARD TRAILS</small></button>
+    <nav class="tools" aria-label="游戏工具"><button id="help" title="操作说明">玩法</button><button id="sound" aria-label="关闭声音" title="声音开关">声音 · 开</button><button id="fullscreen" aria-label="全屏显示" title="全屏">⛶</button></nav>
+  </header>
+  <main class="shell">
+    <section id="stage" class="stage" aria-label="横版平台跳跃游戏">
+      <canvas id="world" width="1280" height="720" tabindex="0" aria-label="游戏画面：方向键移动，空格跳跃，Shift奔跑，Esc暂停"></canvas>
+      <div id="hud" class="hud" hidden>
+        <div class="hud-left"><span id="hearts" aria-label="生命"></span><span class="hud-divider"></span><span id="coins" class="coin-count">◉ 00</span></div>
+        <div class="hud-center"><div id="levelName">01 / 日光草原</div><small id="activeCharacter"></small><div class="progress"><i id="progressFill"></i></div></div>
+        <button id="pause" class="pause" aria-label="暂停游戏">Ⅱ</button>
+      </div>
+      <div id="toast" class="toast" aria-live="polite"></div>
+      <div id="intro" class="intro">
+        <div class="intro-copy"><p class="eyebrow">远行篇 / THE WIDER WORLD</p><h1>风野奇旅<span>六段风景，与你同行。</span></h1><p class="intro-desc">从草浪出发，走向海岛、沙丘与萤光。<br>选一位旅伴，带上白猫，再走远一点。</p>
+          <div class="character-picker" aria-label="选择人物"><p class="picker-label">谁来领路 <span>三位旅伴，各有所长</span></p><div id="characterOptions" class="character-options"></div><p id="characterDescription" aria-live="polite"></p></div>
+          <button id="start" class="primary" disabled>正在准备旅程… <span>→</span></button>
+          <p class="keyboard-hint"><kbd>←</kbd><kbd>→</kbd> 移动 <kbd>Space</kbd> 跳跃 <kbd>Shift</kbd> 奔跑</p>
+        </div>
+        <div class="level-picker" aria-label="选择起始关卡"><p>从这里出发 <span id="mapProgress">六处风景，随心选择</span></p><div id="levelOptions" class="level-options"></div><p id="mapDescription" class="map-description" aria-live="polite"></p></div>
+        <div class="intro-foot"><span>一段可以亲自走进去的风景</span><span>6 张地图 · 3 位旅伴 · 白猫随行</span></div>
+      </div>
+      <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card"><p id="modalKicker" class="eyebrow"></p><h2 id="modalTitle"></h2><p id="modalText"></p><div id="modalStats" class="stats"></div><div id="modalActions" class="modal-actions"></div></div>
+      </div>
+      <div id="playHint" class="play-hint" hidden><span><kbd>← →</kbd> 移动</span><span><kbd>空格</kbd> 跳跃</span><span><kbd>Shift</kbd> 奔跑</span><span><kbd>Esc</kbd> 暂停</span></div>
+      <div id="touchControls" class="touch-controls" hidden><div class="touch-direction"><button data-control="left" aria-label="向左移动">◀</button><button data-control="right" aria-label="向右移动">▶</button></div><button data-control="jump" class="touch-jump" aria-label="跳跃">跳跃</button></div>
+      <div id="loadError" class="load-error" hidden>素材未能加载。请完整解压游戏文件夹后重新打开 index.html。</div>
+    </section>
+  </main>
+  <footer class="page-foot"><span>收集金币 · 从上方踩中甲虫 · 抵达营地</span><span>R 重开本关 <b>·</b> 点击画面后即可用键盘操作</span></footer>
+  <script src="assets/sprites.js"></script><script src="core.js"></script><script src="game.js"></script>
+</body>
+</html>

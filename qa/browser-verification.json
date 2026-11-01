@@ -1,0 +1,184 @@
+{
+  "passed": true,
+  "contract_only": false,
+  "verified_at_utc": "2026-11-01T14:07:39.467856+00:00",
+  "checks": [
+    "six map selectors, three characters and ability description",
+    "character/map persistence, ability description, direct sixth-map entry and corrupt preference/Infinity record fallback",
+    "real keyboard movement and jump",
+    "pause freezes physics, repeated help click, help Escape and correct resume state",
+    {
+      "keyboard_completed_stage": 0,
+      "state": {
+        "status": "levelComplete",
+        "x": 4400.395833333333,
+        "y": 500,
+        "vy": 0,
+        "grounded": true,
+        "hearts": 1,
+        "coins": 47,
+        "time": 15.633333333333086,
+        "index": 0,
+        "character": "hero"
+      }
+    },
+    {
+      "keyboard_completed_stage": 1,
+      "state": {
+        "status": "levelComplete",
+        "x": 4402.665406244234,
+        "y": 500,
+        "vy": 0,
+        "grounded": true,
+        "hearts": 2,
+        "coins": 34,
+        "time": 13.374999999999881,
+        "index": 1,
+        "character": "hero"
+      }
+    },
+    {
+      "keyboard_completed_stage": 2,
+      "state": {
+        "status": "levelComplete",
+        "x": 4400.556436430369,
+        "y": 500,
+        "vy": 0,
+        "grounded": true,
+        "hearts": 3,
+        "coins": 33,
+        "time": 10.675000000000034,
+        "index": 2,
+        "character": "hero"
+      }
+    },
+    {
+      "keyboard_completed_stage": 3,
+      "state": {
+        "status": "levelComplete",
+        "x": 4203.395833333334,
+        "y": 272.0833333333328,
+        "vy": -260,
+        "grounded": false,
+        "hearts": 3,
+        "coins": 47,
+        "time": 10.183333333333396,
+        "index": 3,
+        "character": "hero"
+      }
+    },
+    {
+      "keyboard_completed_stage": 4,
+      "state": {
+        "status": "levelComplete",
+        "x": 4701.395833333333,
+        "y": 413.958333333332,
+        "vy": 370,
+        "grounded": false,
+        "hearts": 2,
+        "coins": 31,
+        "time": 13.116666666666562,
+        "index": 4,
+        "character": "hero"
+      }
+    },
+    {
+      "keyboard_completed_stage": 5,
+      "state": {
+        "status": "won",
+        "x": 5000.895833333333,
+        "y": 413.958333333332,
+        "vy": 370,
+        "grounded": false,
+        "hearts": 2,
+        "coins": 47,
+        "time": 13.699999999999863,
+        "index": 5,
+        "character": "hero"
+      }
+    },
+    "six-stage campaign, restart, focus-loss pause and persistent completion markers",
+    {
+      "offline_entry_images_and_audio": {
+        "images": [
+          {
+            "file": "bg-grassland.jpg",
+            "width": 1920,
+            "height": 1080
+          },
+          {
+            "file": "bg-forest.jpg",
+            "width": 1920,
+            "height": 1080
+          },
+          {
+            "file": "bg-alpine.jpg",
+            "width": 1920,
+            "height": 1080
+          },
+          {
+            "file": "bg-lagoon.jpg",
+            "width": 1920,
+            "height": 1080
+          },
+          {
+            "file": "bg-desert.jpg",
+            "width": 1920,
+            "height": 1080
+          },
+          {
+            "file": "bg-cavern.jpg",
+            "width": 1920,
+            "height": 1080
+          },
+          {
+            "file": "hero.png",
+            "width": 1332,
+            "height": 229
+          },
+          {
+            "file": "cat.png",
+            "width": 2292,
+            "height": 134
+          },
+          {
+            "file": "ranger.png",
+            "width": 1332,
+            "height": 245
+          },
+          {
+            "file": "mage.png",
+            "width": 1128,
+            "height": 232
+          }
+        ],
+        "audio": [
+          {
+            "name": "grassland",
+            "duration": 20
+          },
+          {
+            "name": "forest",
+            "duration": 20
+          },
+          {
+            "name": "alpine",
+            "duration": 20
+          }
+        ]
+      }
+    },
+    "mobile: accessible start, simultaneous move/jump, released touch and no overflow",
+    "landscape: accessible start, simultaneous move/jump, released touch and no overflow"
+  ],
+  "console_errors": [],
+  "resource_errors": [],
+  "failure": null,
+  "source_sha256": {
+    "index.html": "edbb155ae5425fb9da62e9b4f674f409abc44c8c121ce9cb9d36206f8c48bcb1",
+    "style.css": "798766e4b8dcee0538494d562f919bf7adff8b03091201d181f3830b3e079fd9",
+    "core.js": "ac1a94f740c0f2185a09d9c3f0b6120020a03e1e93c09988704485d0c6f5de0a",
+    "game.js": "558aa28764d4d2dbb207a56a165a88fea2a83bc0c5402db7366db57c6977f55f",
+    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
+  }
+}
