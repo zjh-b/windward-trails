@@ -1,0 +1,78 @@
+{
+  "environment": "Headless Chromium 1280x800, same local HTTP origin; 2.5 s samples after 0.5 s warmup",
+  "baseline_commit": "b8b38dfec9dc080b912e606d3ad21843bb7a553d",
+  "samples": [
+    {
+      "draws": 150,
+      "frames": 150,
+      "seconds": 2.50620000000298,
+      "hidden": false,
+      "paused": false,
+      "version": "before",
+      "phase": "menu",
+      "draws_per_second": 59.85,
+      "raf_per_second": 59.85
+    },
+    {
+      "draws": 151,
+      "frames": 151,
+      "seconds": 2.5160999999940397,
+      "hidden": false,
+      "paused": false,
+      "version": "before",
+      "phase": "playing",
+      "draws_per_second": 60.01,
+      "raf_per_second": 60.01
+    },
+    {
+      "draws": 151,
+      "frames": 151,
+      "seconds": 2.5117999999970197,
+      "hidden": false,
+      "paused": true,
+      "version": "before",
+      "phase": "paused",
+      "draws_per_second": 60.12,
+      "raf_per_second": 60.12
+    },
+    {
+      "draws": 75,
+      "frames": 150,
+      "seconds": 2.50839999999851,
+      "hidden": false,
+      "paused": false,
+      "version": "after",
+      "phase": "menu",
+      "draws_per_second": 29.9,
+      "raf_per_second": 59.8
+    },
+    {
+      "draws": 151,
+      "frames": 151,
+      "seconds": 2.5165,
+      "hidden": false,
+      "paused": false,
+      "version": "after",
+      "phase": "playing",
+      "draws_per_second": 60.0,
+      "raf_per_second": 60.0
+    },
+    {
+      "draws": 75,
+      "frames": 150,
+      "seconds": 2.51379999999702,
+      "hidden": false,
+      "paused": true,
+      "version": "after",
+      "phase": "paused",
+      "draws_per_second": 29.84,
+      "raf_per_second": 59.67
+    }
+  ],
+  "current_source_sha256": {
+    "index.html": "1b57417c342fa9e8afda5d7be9a93c9649b9c4a9f32d869ca23a979b5250aa4f",
+    "style.css": "9e42d11e379ebc293bfdd5553446bff590725eb4124d541d33255c04e4a33e5c",
+    "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
+    "game.js": "419ef976437cd4e4f7e7bd3c27fb30ac5c5f750073e3e780f3b40bcca98fbafb"
+  }
+}

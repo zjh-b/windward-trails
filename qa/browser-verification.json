@@ -1,23 +1,24 @@
 {
   "passed": true,
   "contract_only": false,
-  "verified_at_utc": "2026-11-01T14:07:39.467856+00:00",
+  "verified_at_utc": "2026-11-01T16:03:27.059101+00:00",
   "checks": [
     "six map selectors, three characters and ability description",
     "character/map persistence, ability description, direct sixth-map entry and corrupt preference/Infinity record fallback",
     "real keyboard movement and jump",
     "pause freezes physics, repeated help click, help Escape and correct resume state",
+    "real F consumes ammo; E reload freezes on pause; refresh resumes stored journey and reload; corrupt journey safely ignored",
     {
       "keyboard_completed_stage": 0,
       "state": {
         "status": "levelComplete",
-        "x": 4400.395833333333,
+        "x": 4400.388888888873,
         "y": 500,
         "vy": 0,
         "grounded": true,
-        "hearts": 1,
-        "coins": 47,
-        "time": 15.633333333333086,
+        "hearts": 3,
+        "coins": 41,
+        "time": 19.36666666666621,
         "index": 0,
         "character": "hero"
       }
@@ -26,13 +27,13 @@
       "keyboard_completed_stage": 1,
       "state": {
         "status": "levelComplete",
-        "x": 4402.665406244234,
+        "x": 4400.388888888834,
         "y": 500,
         "vy": 0,
         "grounded": true,
-        "hearts": 2,
-        "coins": 34,
-        "time": 13.374999999999881,
+        "hearts": 3,
+        "coins": 43,
+        "time": 19.449999999999537,
         "index": 1,
         "character": "hero"
       }
@@ -41,13 +42,13 @@
       "keyboard_completed_stage": 2,
       "state": {
         "status": "levelComplete",
-        "x": 4400.556436430369,
+        "x": 4402.388888888836,
         "y": 500,
         "vy": 0,
         "grounded": true,
         "hearts": 3,
-        "coins": 33,
-        "time": 10.675000000000034,
+        "coins": 40,
+        "time": 18.40833333333293,
         "index": 2,
         "character": "hero"
       }
@@ -56,13 +57,13 @@
       "keyboard_completed_stage": 3,
       "state": {
         "status": "levelComplete",
-        "x": 4203.395833333334,
-        "y": 272.0833333333328,
-        "vy": -260,
-        "grounded": false,
-        "hearts": 3,
-        "coins": 47,
-        "time": 10.183333333333396,
+        "x": 4200.388888888836,
+        "y": 500,
+        "vy": 0,
+        "grounded": true,
+        "hearts": 2,
+        "coins": 46,
+        "time": 26.15833333333249,
         "index": 3,
         "character": "hero"
       }
@@ -71,13 +72,13 @@
       "keyboard_completed_stage": 4,
       "state": {
         "status": "levelComplete",
-        "x": 4701.395833333333,
-        "y": 413.958333333332,
-        "vy": 370,
-        "grounded": false,
+        "x": 4701.722222222256,
+        "y": 500,
+        "vy": 0,
+        "grounded": true,
         "hearts": 2,
-        "coins": 31,
-        "time": 13.116666666666562,
+        "coins": 41,
+        "time": 26.808333333332452,
         "index": 4,
         "character": "hero"
       }
@@ -86,13 +87,13 @@
       "keyboard_completed_stage": 5,
       "state": {
         "status": "won",
-        "x": 5000.895833333333,
-        "y": 413.958333333332,
-        "vy": 370,
-        "grounded": false,
-        "hearts": 2,
-        "coins": 47,
-        "time": 13.699999999999863,
+        "x": 5001.055555555645,
+        "y": 500,
+        "vy": 0,
+        "grounded": true,
+        "hearts": 3,
+        "coins": 51,
+        "time": 24.274999999999263,
         "index": 5,
         "character": "hero"
       }
@@ -168,17 +169,18 @@
         ]
       }
     },
-    "mobile: accessible start, simultaneous move/jump, released touch and no overflow",
-    "landscape: accessible start, simultaneous move/jump, released touch and no overflow"
+    "mobile: accessible start, simultaneous move/jump/fire, reload, run resets on pause, wide view and no overflow",
+    "landscape: accessible start, simultaneous move/jump/fire, reload, run resets on pause, wide view and no overflow"
   ],
   "console_errors": [],
   "resource_errors": [],
   "failure": null,
   "source_sha256": {
-    "index.html": "edbb155ae5425fb9da62e9b4f674f409abc44c8c121ce9cb9d36206f8c48bcb1",
-    "style.css": "798766e4b8dcee0538494d562f919bf7adff8b03091201d181f3830b3e079fd9",
-    "core.js": "ac1a94f740c0f2185a09d9c3f0b6120020a03e1e93c09988704485d0c6f5de0a",
-    "game.js": "558aa28764d4d2dbb207a56a165a88fea2a83bc0c5402db7366db57c6977f55f",
+    "index.html": "1b57417c342fa9e8afda5d7be9a93c9649b9c4a9f32d869ca23a979b5250aa4f",
+    "style.css": "9e42d11e379ebc293bfdd5553446bff590725eb4124d541d33255c04e4a33e5c",
+    "combat.js": "75d2628c6793e695fa1ebae5611cb6b7a228bda6f907480bc78c537791066c7d",
+    "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
+    "game.js": "419ef976437cd4e4f7e7bd3c27fb30ac5c5f750073e3e780f3b40bcca98fbafb",
     "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
   }
 }

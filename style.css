@@ -78,3 +78,39 @@ button:focus-visible{position:relative;z-index:2}
   .modal{padding:10px}.modal-card{padding:16px 22px;width:350px;max-width:95%}.modal-card h2{font-size:23px;margin:8px 0}.modal-card p:not(.eyebrow){font-size:11px;line-height:1.65;margin:7px 0}.modal-card .eyebrow{margin:0}.modal-actions{margin-top:10px;gap:6px}.modal-actions button{padding:9px}.stats{margin-top:10px;padding-top:10px}.stat strong{font-size:20px}
 }
 @media(prefers-reduced-motion:reduce){button,.toast{transition:none}.primary:hover,.level-choice:hover{transform:none}}
+
+/* Combat stays readable without covering the route ahead. */
+.continue-journey{display:block;background:transparent;border:1px solid #d4dfaa60;border-radius:5px;padding:10px 14px;margin-top:10px;font-size:12px;color:#e0e8ca;text-align:left;max-width:100%}
+.continue-journey:hover{background:#ffffff12}
+.ammo-hud{position:absolute;top:65px;left:0;display:grid;grid-template-columns:auto auto;gap:5px 14px;padding:9px 14px;border-radius:9px;background:#172d27d9;border:1px solid #ffffff25;font-size:12px}
+.ammo-hud>div:first-child{grid-column:1/-1;display:flex;justify-content:space-between;gap:20px}#weaponName{color:#d9e3b6}#ammoCount{text-align:right;font-variant-numeric:tabular-nums}
+#ammoPips{grid-column:1/-1;color:#f8d98c;letter-spacing:4px;font-size:12px;padding-bottom:5px;background:linear-gradient(#dfd69b,#dfd69b) left bottom / calc(var(--reload,1)*100%) 2px no-repeat}
+#reloadStatus{grid-column:1/-1;color:#c6d4c0;font-size:10px;white-space:nowrap}
+.boss-hud{position:absolute;top:105px;left:50%;transform:translateX(-50%);width:min(300px,44%);padding:10px 15px;background:#172d27e6;border:1px solid #e4d49755;border-radius:8px;text-align:center;pointer-events:none}
+.boss-hud>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+#bossPhase{font-size:10px;color:#e7d297}.boss-track{height:5px;background:#ffffff25;margin-top:8px;border-radius:3px;overflow:hidden}#bossHealth{display:block;height:100%;background:#e6c884;transition:width .15s}
+.trap-status{position:absolute;left:50%;bottom:130px;transform:translateX(-50%);border:1px solid #edcf8e80;border-radius:8px;background:#423d24ee;padding:9px 15px;color:#ffe6a7;font-size:12px;white-space:nowrap;pointer-events:none}
+.touch-actions{display:flex;gap:12px;align-items:flex-end}.touch-controls{align-items:flex-end}
+.touch-controls .touch-run{position:absolute;bottom:76px;left:20px;width:112px;height:36px;border-radius:18px;font-size:11px}
+.touch-controls .touch-reload{position:absolute;bottom:89px;right:20px;width:126px;height:36px;border-radius:18px;font-size:11px}
+.touch-controls .touch-fire{background:#d6b477df;color:#283f30;font-size:14px}
+.touch-run[aria-pressed=true]{background:#e5d993;color:#203b2c}
+.toast{top:29%;white-space:normal;text-align:center;max-width:90%;width:max-content}
+@media(max-width:1100px){.keyboard-hint{flex-wrap:wrap}.intro-desc{margin-bottom:12px}.ammo-hud{top:53px}}
+@media(pointer:coarse){.touch-controls .touch-jump{transform:none}.play-hint{display:none}}
+@media(max-width:650px) and (orientation:portrait){
+  .stage.playing{aspect-ratio:auto;height:100%;max-height:none;width:100%}.shell{padding:0}
+  .continue-journey{width:100%;font-size:11px;padding:11px 14px}
+  .ammo-hud{top:91px;padding:8px 10px;font-size:11px;gap:4px 10px}#reloadStatus{font-size:10px}
+  .boss-hud{top:94px;right:13px;left:auto;transform:none;width:46%;padding:10px}.boss-hud>div:first-child{display:block}#bossPhase{display:block;margin-top:5px}
+  .touch-controls{bottom:22px;padding:0 16px}.touch-direction,.touch-actions{gap:8px}
+  .touch-controls button{width:49px;height:49px}.touch-controls .touch-fire{width:52px;height:52px;font-size:12px}.touch-controls .touch-jump{width:62px;height:62px;font-size:13px}
+  .touch-controls .touch-run{left:16px;bottom:72px;width:106px;height:35px}.touch-controls .touch-reload{right:16px;bottom:72px;width:122px;height:35px}
+  .trap-status{bottom:145px;font-size:11px;padding:8px 12px}.toast{top:30%}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .stage.playing{width:100%;height:100%;aspect-ratio:auto}.ammo-hud{top:43px;padding:6px 10px;gap:3px 10px;font-size:11px}#reloadStatus{font-size:9px}#ammoPips{font-size:10px;padding-bottom:3px}
+  .boss-hud{top:64px;padding:7px 12px;width:260px}.boss-hud>div:first-child{font-size:11px}
+  .touch-controls{padding:0 14px;bottom:10px}.touch-direction,.touch-actions{gap:8px}.touch-controls button{width:48px;height:48px}.touch-controls .touch-jump{width:57px;height:57px;font-size:12px}.touch-controls .touch-run{left:14px;bottom:56px;width:104px;height:32px}.touch-controls .touch-reload{right:14px;bottom:66px;width:113px;height:32px}
+  .trap-status{bottom:90px;font-size:11px}.toast{top:40%;font-size:10px}
+}

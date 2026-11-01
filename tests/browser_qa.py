@@ -14,13 +14,13 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'qa'
 THEMES = ['grassland', 'forest', 'alpine', 'lagoon', 'desert', 'cavern']
-SOURCE_FILES = ['index.html', 'style.css', 'core.js', 'game.js', 'assets/sprites.js']
+SOURCE_FILES = ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'assets/sprites.js']
 CAPTURE = '''(() => {
  let core;
  Object.defineProperty(window, 'TrailCore', {
   configurable:true, get(){return core;}, set(value){
    const Base=value.Game;
-   value.Game=class extends Base {constructor(...args){super(...args);window.__qaGame=this;}};
+   value.Game=class extends Base {constructor(...args){super(...args);window.__qaGame??=this;}};
    core=value;
   }
  });
@@ -60,6 +60,8 @@ def ready(page):
 
 def attach(page,label,errors,resources):
     page.add_init_script(CAPTURE)
+    route=(ROOT/'tests/route.cjs').read_text(encoding='utf-8').split('module.exports=')[0]
+    page.add_init_script(route+'\nwindow.__qaDecision=decision;')
     page.on('pageerror',lambda error:errors.append(f'{label}: {error}'))
     page.on('console',lambda message:errors.append(f'{label}: {message.text}') if message.type=='error' else None)
     page.on('response',lambda response:resources.append(f'{label}: {response.status} {response.url}') if response.status>=400 else None)
@@ -86,28 +88,34 @@ def drive_stage(page,index,checks):
     # before the apex on a busy browser and unintentionally becomes a short jump.
     # Polling continues while the key is held so a moving-platform landing is
     # never hidden behind a long, blind wait.
-    page.keyboard.down('ArrowRight')
-    page.keyboard.down('Shift')
-    deadline=time.monotonic()+55
+    page.keyboard.down('KeyF')
+    deadline=time.monotonic()+160
     jump_held=False
+    held=set()
+    boss_captured=False
     try:
         while time.monotonic()<deadline:
-            decision=page.evaluate('''() => {const g=window.__qaGame,p=g.player,a=p.x+p.w;
-              const floor=g.platforms.find(q=>q.id===p.onPlatform);
-              const enemy=g.enemies.some(e=>e.alive&&e.x>p.x&&e.x-a<135&&Math.abs(e.y+e.h-(p.y+p.h))<45);
-              return {status:g.status,vy:p.vy,grounded:p.grounded,
-                jump:p.grounded&&(enemy||(floor&&floor.x+floor.w-a<(floor.kind==='ground'?90:60)&&floor.x+floor.w<g.level.width))};}''')
+            decision=page.evaluate('''() => {const g=window.__qaGame,p=g.player,d=window.__qaDecision(g);
+              return {status:g.status,vy:p.vy,grounded:p.grounded,axis:d.axis,
+                jump:d.jumpPressed,boss:g.boss.active&&g.boss.hp>0&&g.boss.x-p.x<550&&p.grounded};}''')
             if decision['status']!='playing':
                 break
+            wanted={'ArrowRight'} if decision['axis']>0 else {'ArrowLeft'} if decision['axis']<0 else set()
+            for key in held-wanted: page.keyboard.up(key)
+            for key in wanted-held: page.keyboard.down(key)
+            held=wanted
             if jump_held and decision['vy']>=0:
                 page.keyboard.up('Space')
                 jump_held=False
             if decision['jump'] and not jump_held:
                 page.keyboard.down('Space')
                 jump_held=True
+            if decision['boss'] and not boss_captured:
+                page.screenshot(path=str(OUT/f'{THEMES[index]}-boss.png'))
+                boss_captured=True
             page.wait_for_timeout(16)
     finally:
-        for key in ['ArrowRight','Shift','Space']:
+        for key in ['ArrowRight','ArrowLeft','KeyF','Space']:
             page.keyboard.up(key)
     result=state(page)
     expected='won' if index==len(THEMES)-1 else 'levelComplete'
@@ -121,6 +129,36 @@ def touch_point(page,selector,touch_id):
     box=page.locator(selector).bounding_box()
     assert box,f'Missing touch target: {selector}'
     return {'x':box['x']+box['width']/2,'y':box['y']+box['height']/2,'id':touch_id}
+
+
+def combat_checks(page,checks):
+    page.keyboard.press('KeyR')
+    page.keyboard.down('KeyF')
+    page.wait_for_timeout(330)
+    page.keyboard.up('KeyF')
+    ammo=page.evaluate('window.__qaGame.weapon.ammo')
+    assert 0<ammo<6,ammo
+    page.keyboard.press('KeyE')
+    page.wait_for_timeout(100)
+    assert '换弹中' in page.locator('#reloadStatus').inner_text()
+    page.keyboard.press('Escape')
+    before=page.evaluate('window.__qaGame.weapon.reloadLeft')
+    page.wait_for_timeout(350)
+    assert page.evaluate('window.__qaGame.weapon.reloadLeft')==before and before>0
+    saved=page.evaluate("JSON.parse(localStorage.getItem('windward-journey'))")
+    page.reload();ready(page)
+    assert page.locator('#continueJourney').is_visible()
+    page.click('#continueJourney')
+    assert state(page)['status']=='playing' and state(page)['index']==saved['index']
+    assert state(page)['character']==saved['character']
+    page.wait_for_timeout(1500)
+    assert page.evaluate('window.__qaGame.weapon.ammo')==6
+    page.click('#home')
+    page.evaluate("localStorage.setItem('windward-journey','{broken')")
+    page.reload();ready(page)
+    assert not page.locator('#continueJourney').is_visible()
+    select(page,'hero',0);page.click('#start')
+    checks.append('real F consumes ammo; E reload freezes on pause; refresh resumes stored journey and reload; corrupt journey safely ignored')
 
 
 def mobile_check(browser,url,errors,resources,checks,landscape=False):
@@ -137,24 +175,38 @@ def mobile_check(browser,url,errors,resources,checks,landscape=False):
     page.click('#start')
     page.wait_for_timeout(120)
     assert page.locator('#touchControls').is_visible()
+    boxes=page.locator('#touchControls button').evaluate_all('(buttons)=>buttons.map(b=>{const r=b.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom};})')
+    for i,a in enumerate(boxes):
+        for b in boxes[i+1:]:
+            assert not(a['x']<b['right'] and a['right']>b['x'] and a['y']<b['bottom'] and a['bottom']>b['y']),('Touch targets overlap',a,b)
     assert state(page)['character']=='ranger'
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),label
     before=state(page)
     cdp=page.context.new_cdp_session(page)
     right=touch_point(page,'[data-control=right]',1)
     jump=touch_point(page,'[data-control=jump]',2)
+    fire=touch_point(page,'[data-control=fire]',3)
     cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[right]})
     page.wait_for_timeout(180)
-    cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[right,jump]})
+    cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[right,jump,fire]})
     page.wait_for_timeout(150)
     jumping=state(page)
     assert jumping['x']>before['x']+40 and jumping['vy']<0,(before,jumping)
+    assert page.evaluate('window.__qaGame.weapon.ammo')<8
     cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[right]})
     page.wait_for_timeout(120)
     assert state(page)['x']>jumping['x']+20
     cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
+    page.click('#touchReload');page.wait_for_timeout(100)
+    assert page.evaluate('window.__qaGame.weapon.reloadLeft')>0
+    page.click('#touchRun')
+    assert page.locator('#touchRun').get_attribute('aria-pressed')=='true'
+    page.click('#pause')
+    assert page.locator('#touchRun').get_attribute('aria-pressed')=='false'
+    page.get_by_role('button',name='继续旅程',exact=True).click()
+    assert page.evaluate('document.getElementById("world").width/devicePixelRatio>=639')
     page.screenshot(path=str(OUT/f'{label}-play.png'))
-    checks.append(f'{label}: accessible start, simultaneous move/jump, released touch and no overflow')
+    checks.append(f'{label}: accessible start, simultaneous move/jump/fire, reload, run resets on pause, wide view and no overflow')
     page.close()
 
 
@@ -231,6 +283,7 @@ def run(browser,url,args,checks,errors,resources):
     assert state(page)['status']=='playing' and not page.locator('#modal').is_visible()
     checks.append('pause freezes physics, repeated help click, help Escape and correct resume state')
     page.screenshot(path=str(OUT/'grassland-play.png'))
+    combat_checks(page,checks)
     page.keyboard.press('KeyR')
     for index in range(len(THEMES)):
         assert state(page)['index']==index and state(page)['character']=='hero'

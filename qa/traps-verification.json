@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "trap": "swamp",
+      "real_keyboard_entry": {
+        "trap": "swamp",
+        "sink": 0,
+        "hearts": 3
+      },
+      "jump_escape": {
+        "trap": "",
+        "sink": 0,
+        "y": 375.8333333333326
+      }
+    },
+    {
+      "trap": "quicksand",
+      "real_keyboard_entry": {
+        "trap": "quicksand",
+        "sink": 0.2675438596491234,
+        "hearts": 3
+      },
+      "jump_escape": {
+        "trap": "",
+        "sink": 0,
+        "y": 374.8749999999992
+      }
+    }
+  ],
+  "console_errors": [],
+  "resource_errors": [],
+  "source_sha256": {
+    "index.html": "1b57417c342fa9e8afda5d7be9a93c9649b9c4a9f32d869ca23a979b5250aa4f",
+    "style.css": "9e42d11e379ebc293bfdd5553446bff590725eb4124d541d33255c04e4a33e5c",
+    "combat.js": "75d2628c6793e695fa1ebae5611cb6b7a228bda6f907480bc78c537791066c7d",
+    "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
+    "game.js": "419ef976437cd4e4f7e7bd3c27fb30ac5c5f750073e3e780f3b40bcca98fbafb",
+    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
+  }
+}

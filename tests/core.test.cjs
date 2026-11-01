@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const Core = require('../core.js');
+const {drive}=require('./route.cjs');
 const tick = (g, n, input={}) => { for(let i=0;i<n;i++) g.step(1/120,input); };
 
 test('a playable game starts with three hearts and stable ground contact', () => {
@@ -45,32 +46,11 @@ test('pausing freezes simulation and retry clears transient state', () => {
   assert.equal(g.player.x,x);assert.equal(g.elapsed,t);g.pause();tick(g,40,{axis:1});assert.ok(g.player.x>x);
   g.retry();assert.equal(g.player.vx,0);assert.equal(g.player.vy,0);
 });
-test('all required routes are traversable with actual movement and jumps', () => {
+test('all required routes allow fighting and jumping at sprint speed', () => {
   for(let stage=0;stage<Core.levels.length;stage++){
-    const g=new Core.Game();g.start(stage);
-    for(let frame=0;frame<10000 && g.status==='playing';frame++){
-      const p=g.player; const ahead=p.x+p.w;
-      const floor=g.platforms.find(s=>s.kind==='ground' && ahead>=s.x-5 && ahead<=s.x+s.w);
-      const danger=g.enemies.some(e=>e.alive && e.x>p.x && e.x-ahead<115 && Math.abs(e.y+e.h-(p.y+p.h))<45);
-      const nearGap=floor && floor.x+floor.w-ahead<90 && floor.x+floor.w<g.level.width;
-      const jump=p.grounded && (danger || nearGap);
-      g.step(1/120,{axis:1,run:true,jumpPressed:jump,jumpHeld:true});
-    }
+    const g=new Core.Game();g.start(stage);drive(g,true);
     assert.ok(['levelComplete','won'].includes(g.status),`stage ${stage}: ${g.status}, x=${g.player.x}, hearts=${g.hearts}`);
-    assert.ok(g.collected>5);
-  }
-});
-test('ordinary running speed is enough for every mandatory gap', () => {
-  for(let stage=0;stage<Core.levels.length;stage++){
-    const g=new Core.Game();g.start(stage);
-    for(let frame=0;frame<12000&&g.status==='playing';frame++){
-      const p=g.player,a=p.x+p.w;
-      const ground=g.platforms.find(s=>s.kind==='ground'&&a>=s.x-5&&a<=s.x+s.w);
-      const gap=ground&&ground.x+ground.w-a<32&&ground.x+ground.w<g.level.width;
-      const enemy=g.enemies.some(e=>e.alive&&e.x>p.x&&e.x-a<90&&Math.abs(e.y+e.h-(p.y+p.h))<45);
-      g.step(1/120,{axis:1,jumpPressed:p.grounded&&(gap||enemy),jumpHeld:true});
-    }
-    assert.ok(['won','levelComplete'].includes(g.status),`normal speed stage ${stage}: ${g.status} x=${g.player.x}`);
+    assert.equal(g.boss.hp,0);assert.ok(g.collected>5);
   }
 });
 test('a rider follows the moving platform without falling through it', () => {
@@ -114,9 +94,9 @@ test('character choice changes real speed and jump height while retaining common
 test('retry, preview and continuing beyond the alpine map preserve the selected character', () => {
   const g=new Core.Game();g.start(2,'mage');g.retry();assert.equal(g.character.id,'mage');
   g.preview(2);assert.equal(g.character.id,'mage');g.start(2);
-  g.player.x=g.level.width-180;tick(g,1);assert.equal(g.status,'levelComplete');
+  g.boss.hp=0;g.player.x=g.level.width-180;tick(g,1);assert.equal(g.status,'levelComplete');
   g.next();assert.equal(g.index,3);assert.equal(g.character.id,'mage');
-  g.start(Core.levels.length-1,'ranger');g.player.x=g.level.width-180;tick(g,1);
+  g.start(Core.levels.length-1,'ranger');g.boss.hp=0;g.player.x=g.level.width-180;tick(g,1);
   assert.equal(g.status,'won');g.next();assert.equal(g.index,Core.levels.length-1);
 });
 
@@ -132,13 +112,7 @@ test('all eighteen character and map combinations can finish at ordinary speed',
   assert.equal(Core.characters?.length,3);assert.equal(Core.levels.length,6);
   for(const character of Core.characters)for(let stage=0;stage<Core.levels.length;stage++){
     const g=new Core.Game();g.start(stage,character.id);
-    for(let frame=0;frame<14000&&g.status==='playing';frame++){
-      const p=g.player,a=p.x+p.w;
-      const ground=g.platforms.find(s=>s.kind==='ground'&&a>=s.x-5&&a<=s.x+s.w);
-      const gap=ground&&ground.x+ground.w-a<32&&ground.x+ground.w<g.level.width;
-      const enemy=g.enemies.some(e=>e.alive&&e.x>p.x&&e.x-a<90&&Math.abs(e.y+e.h-(p.y+p.h))<45);
-      g.step(1/120,{axis:1,jumpPressed:p.grounded&&(gap||enemy),jumpHeld:true});
-    }
+    drive(g);
     assert.ok(['won','levelComplete'].includes(g.status),`${character.id} in ${g.level.id}: ${g.status} x=${g.player.x}`);
     assert.ok(g.collected>5);
   }

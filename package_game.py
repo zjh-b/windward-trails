@@ -10,7 +10,7 @@ from urllib.request import urlopen
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parent
-ARCHIVE = ROOT.parent / 'windward_trails_game_v2.zip'
+ARCHIVE = ROOT.parent / 'windward_trails_game_v3.zip'
 
 
 def main():
@@ -19,14 +19,17 @@ def main():
     assert not browser.get('contract_only'), 'Full browser QA is required.'
     assert len([check for check in browser['checks'] if isinstance(check, dict) and 'keyboard_completed_stage' in check]) == 6, 'Verify all six stages before packaging.'
     assert not browser.get('resource_errors'), 'Browser resource loading failed.'
-    for name in ['index.html', 'style.css', 'core.js', 'game.js', 'assets/sprites.js']:
+    traps = json.loads((ROOT / 'qa/traps-verification.json').read_text(encoding='utf-8'))
+    assert traps['passed'] and len(traps['checks']) == 2, 'Verify swamp and quicksand in the browser.'
+    for name in ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'assets/sprites.js']:
         actual = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
         assert browser.get('source_sha256', {}).get(name) == actual, f'Rerun browser QA after changing {name}'
-    for name in ['core.js', 'game.js', 'assets/sprites.js']:
+        assert traps.get('source_sha256', {}).get(name) == actual, f'Rerun trap QA after changing {name}'
+    for name in ['combat.js', 'core.js', 'game.js', 'assets/sprites.js']:
         subprocess.run(['node', '--check', name], cwd=ROOT, check=True, capture_output=True)
-    core = subprocess.run(['node', '--test', 'tests/core.test.cjs'], cwd=ROOT,
+    core = subprocess.run(['node', '--test', 'tests/core.test.cjs', 'tests/combat.test.cjs'], cwd=ROOT,
                           check=True, capture_output=True, encoding='utf-8')
-    required = ['index.html', 'style.css', 'core.js', 'game.js', 'run_game.py',
+    required = ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'run_game.py',
                 'assets/hero.png', 'assets/ranger.png', 'assets/mage.png', 'assets/cat.png', 'assets/sprites.js']
     for theme in ['grassland', 'forest', 'alpine']:
         required.extend([f'assets/bg-{theme}.jpg', f'assets/{theme}.mp3'])
@@ -54,7 +57,7 @@ def main():
         server.terminate()
         server.wait(timeout=5)
 
-    top = ['index.html', 'style.css', 'core.js', 'game.js', 'README.md', 'DESIGN.md',
+    top = ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'README.md', 'DESIGN.md', 'IMPROVEMENTS.md',
            'PLAN.md', 'run_game.py', 'Start Game.cmd', 'export_assets.py',
            'pack_assets.py', 'package_game.py', 'EXPANSION.md', 'export_expansion.py', 'pack_expansion.py',
            '.gitignore', '.nojekyll']

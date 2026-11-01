@@ -1,0 +1,9 @@
+{
+  "environment": "Headless Chromium, 1280x800, no CPU throttle",
+  "phase": "after",
+  "rates": {
+    "menu_background_draws_per_second": 30.0,
+    "playing_background_draws_per_second": 21.5,
+    "paused_background_draws_per_second": 11.0
+  }
+}

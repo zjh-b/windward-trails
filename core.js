@@ -1,8 +1,8 @@
 (function(root,factory){
-  const api=factory();
+  const api=factory(typeof module==='object'&&module.exports?require('./combat.js'):root.TrailCombat);
   if(typeof module==='object'&&module.exports) module.exports=api;
   else root.TrailCore=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Combat){
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const overlap=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
@@ -46,7 +46,7 @@
       this.status='playing';this.hearts=3;this.collected=0;this.elapsed=0;this.time=0;this.respawnDelay=0;
       this.events=[];this.checkpoint={x:110,y:500};
       this.platforms=this.level.ground.map(([x,end],i)=>({id:'g'+i,x,y:570,w:end-x,h:300,kind:'ground'}));
-      this.level.ledges.forEach(([x,y,w],i)=>this.platforms.push({id:'p'+i,x,y,w,h:24,kind:'ledge'}));
+      this.level.ledges.forEach(([x,y,w],i)=>{if(x+w<this.level.width-575)this.platforms.push({id:'p'+i,x,y,w,h:24,kind:'ledge'});});
       this.level.moving.forEach(([x,y,w,range,speed],i)=>this.platforms.push({id:'m'+i,x,y,w,h:25,baseX:x,range,speed,kind:'moving',dx:0}));
       this.enemies=this.level.enemies.map((x,i)=>({id:i,x,y:542,w:40,h:28,min:x-65,max:x+95,speed:48+i*5,dir:i%2?-1:1,alive:true,deadTime:0}));
       this.checkpoints=this.level.checkpoints.map(x=>({x,y:570,active:false}));
@@ -62,6 +62,7 @@
       }
       this.player={x:110,y:500,w:34,h:70,vx:0,vy:0,grounded:true,coyote:.11,buffer:0,cut:false,invulnerable:0,facing:1,onPlatform:'g0'};
       this.cat={x:62,y:570,facing:1};this.trail=[];this.camera=0;
+      Combat.setup(this);
     }
     start(index=0,characterId=this.character.id){this.setCharacter(characterId);this.bank=0;this.campaignTime=0;this.deaths=0;this.loadLevel(index);}
     preview(index){this.loadLevel(index);this.status='menu';}
@@ -74,6 +75,7 @@
     respawn(){
       const p=this.player;Object.assign(p,{x:this.checkpoint.x,y:this.checkpoint.y,vx:0,vy:0,grounded:true,coyote:.11,buffer:0,cut:false,invulnerable:1.6,onPlatform:null});
       this.cat={x:p.x-48,y:p.y+p.h,facing:1};this.trail=[];this.respawnDelay=0;
+      Combat.reset(this);
     }
     hurt(force=false){
       if(this.status!=='playing'||this.respawnDelay>0||(!force&&this.player.invulnerable>0))return;
@@ -91,6 +93,7 @@
       const p=this.player;
       if(this.respawnDelay>0){this.respawnDelay-=dt;if(this.respawnDelay<=0)this.respawn();return;}
       p.invulnerable=Math.max(0,p.invulnerable-dt);
+      Combat.prepare(this,dt,input);
       for(const s of this.platforms){
         if(s.kind==='moving'){
           const old=s.x;s.x=s.baseX+Math.sin(this.time*s.speed)*s.range;s.dx=s.x-old;
@@ -104,7 +107,7 @@
       }
       p.buffer=input.jumpPressed?.12:Math.max(0,p.buffer-dt);
       p.coyote=p.grounded?.11:Math.max(0,p.coyote-dt);
-      const axis=clamp(input.axis||0,-1,1),target=axis*(input.run?this.character.runSpeed:this.character.speed);
+      const axis=clamp(input.axis||0,-1,1),target=axis*(input.run?this.character.runSpeed:this.character.speed)*p.slow;
       const accel=axis?2300:2000;
       p.vx+=clamp(target-p.vx,-accel*dt,accel*dt);
       if(axis)p.facing=axis>0?1:-1;
@@ -133,12 +136,36 @@
         else this.hurt();
       }
       for(const c of this.checkpoints){
-        if(!c.active&&p.x>=c.x&&p.y<650){c.active=true;this.checkpoint={x:c.x+38,y:500};this.events.push({type:'checkpoint',x:c.x,y:500});}
+        if(!c.active&&p.x>=c.x&&p.y<650){c.active=true;this.checkpoint={x:c.x+38,y:500};this.hearts=3;this.events.push({type:'checkpoint',x:c.x,y:500});}
       }
       if(p.y>830)this.hurt(true);
+      Combat.finish(this,dt);
       this.trail.push({x:p.x-30,y:p.y+p.h,facing:p.facing});
       if(this.trail.length>24){const follow=this.trail.shift();this.cat.x+=(follow.x-this.cat.x)*.3;this.cat.y+=(follow.y-this.cat.y)*.3;this.cat.facing=follow.facing;}
-      if(p.x>this.level.width-200&&p.y<620){this.status=this.index===levels.length-1?'won':'levelComplete';this.events.push({type:'complete'});}
+      if(this.status==='playing'&&!this.respawnDelay&&this.boss.hp===0&&p.x>this.level.width-200&&p.y<620){this.status=this.index===levels.length-1?'won':'levelComplete';this.events.push({type:'complete'});}
+    }
+    snapshot(){
+      if(!['playing','paused','levelComplete'].includes(this.status)||this.hearts<=0)return null;
+      return {version:1,index:this.index,character:this.character.id,status:this.status==='levelComplete'?'levelComplete':'playing',
+        hearts:this.hearts,bank:this.bank,campaignTime:this.campaignTime,elapsed:this.elapsed,deaths:this.deaths,
+        checkpoint:this.checkpoints.filter(c=>c.active).length,coins:this.coins.map(c=>c.taken),enemies:this.enemies.map(e=>e.alive),
+        guards:this.guards.map(e=>e.hp),boss:this.boss.hp,ammo:this.weapon.ammo,reloadLeft:this.weapon.reloadLeft};
+    }
+    restore(data){
+      if(!data||typeof data!=='object'||data.version!==1||!Number.isInteger(data.index)||data.index<0||data.index>=levels.length||!characters.some(c=>c.id===data.character)||!['playing','levelComplete'].includes(data.status))return false;
+      const g=new Game();g.start(data.index,data.character);
+      const integer=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
+      const finite=(value,max)=>Number.isFinite(value)&&value>=0&&value<=max;
+      if(!integer(data.hearts,1,3)||!integer(data.bank,0,10000)||!integer(data.deaths,0,100000)||!finite(data.elapsed,86400)||!finite(data.campaignTime,86400)||!integer(data.checkpoint,0,g.checkpoints.length)||!integer(data.ammo,0,g.weapon.capacity)||!finite(data.reloadLeft,g.weapon.reloadDuration))return false;
+      if(!Array.isArray(data.coins)||data.coins.length!==g.coins.length||!data.coins.every(v=>typeof v==='boolean')||!Array.isArray(data.enemies)||data.enemies.length!==g.enemies.length||!data.enemies.every(v=>typeof v==='boolean')||!Array.isArray(data.guards)||data.guards.length!==g.guards.length||!data.guards.every((v,i)=>integer(v,0,g.guards[i].maxHp))||!integer(data.boss,0,g.boss.maxHp))return false;
+      if(data.status==='levelComplete'&&(data.boss!==0||data.index===levels.length-1))return false;
+      g.coins.forEach((c,i)=>c.taken=data.coins[i]);g.collected=data.coins.filter(Boolean).length;
+      g.enemies.forEach((e,i)=>e.alive=data.enemies[i]);g.guards.forEach((e,i)=>e.hp=data.guards[i]);g.boss.hp=data.boss;
+      g.checkpoints.forEach((c,i)=>c.active=i<data.checkpoint);
+      if(data.checkpoint)g.checkpoint={x:g.checkpoints[data.checkpoint-1].x+38,y:500};
+      g.respawn();g.weapon.ammo=data.ammo;g.weapon.reloadLeft=data.reloadLeft;
+      Object.assign(g,{hearts:data.hearts,bank:data.bank,campaignTime:data.campaignTime,elapsed:data.elapsed,deaths:data.deaths,status:data.status});
+      Object.assign(this,g);return true;
     }
   }
   return {Game,levels,characters,clamp,overlap};
