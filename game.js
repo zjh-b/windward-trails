@@ -82,14 +82,32 @@
   });
   updateChoices();
   let muted=read('windward-muted','0')==='1',audioContext=null,currentAmbient=null;
-  const ambient={};
-  const ambienceFor={grassland:'grassland',forest:'forest',alpine:'alpine',lagoon:'grassland',desert:'alpine',cavern:'forest'};
-  for(const id of ['grassland','forest','alpine']){const a=new Audio(`assets/${id}.mp3`);a.loop=true;a.preload='none';a.volume=.24;ambient[id]=a;}
+  const ambient={},ambientLevels=new WeakMap(),activeVoices=new Set(),ambienceVolume=.34;
+  for(const id of ['grassland','forest','alpine','lagoon','desert','cavern']){const a=new Audio(`assets/${id}.mp3`);a.loop=true;a.preload='none';a.volume=0;a.muted=true;ambientLevels.set(a,0);ambient[id]=a;}
+  function stopVoices(){
+    if(!audioContext)return;const now=audioContext.currentTime;
+    for(const v of activeVoices){if(v.stopping)continue;v.stopping=true;v.g.gain.cancelScheduledValues(now);v.g.gain.setValueAtTime(0,now);v.o.stop(now+.04);}
+  }
   function syncSound(){
     $('sound').textContent=`声音 · ${muted?'关':'开'}`;$('sound').setAttribute('aria-label',muted?'开启声音':'关闭声音');
-    currentAmbient=ambient[ambienceFor[game.level.id]];
-    for(const a of Object.values(ambient))if(a!==currentAmbient||muted||game.status!=='playing')a.pause();
-    if(!muted&&game.status==='playing'&&currentAmbient.paused)currentAmbient.play().catch(()=>{});
+    currentAmbient=ambient[game.level.id];
+    if(muted||document.hidden){for(const a of Object.values(ambient)){a.muted=true;a.volume=0;ambientLevels.set(a,0);a.pause();}}
+    if(muted||document.hidden||['menu','paused','gameOver'].includes(game.status))stopVoices();
+    if(!muted&&!document.hidden&&game.status==='playing'&&currentAmbient.paused){
+      const a=currentAmbient;a.muted=false;a.play().then(()=>{if(a!==currentAmbient||muted||document.hidden||game.status!=='playing'){a.muted=true;a.volume=0;ambientLevels.set(a,0);a.pause();}}).catch(()=>{});
+    }
+  }
+  function updateAmbience(dt){
+    for(const a of Object.values(ambient)){
+      const audible=a===currentAmbient&&!muted&&!document.hidden&&game.status==='playing',goal=audible?ambienceVolume:0;
+      if(audible&&(a.paused||a.readyState<2))continue;
+      const step=ambienceVolume*dt/(audible?.6:.16),level=ambientLevels.get(a)||0;
+      const next=goal>level?Math.min(goal,level+step):Math.max(goal,level-step);
+      ambientLevels.set(a,next);a.volume=next;
+      // Some mobile media implementations ignore volume writes. Fade progress
+      // belongs to the mixer, so pause/mute must never depend on the getter.
+      if(!audible&&next<.001){a.muted=true;a.volume=0;ambientLevels.set(a,0);if(!a.paused)a.pause();}
+    }
   }
   function unlockAudio(){
     if(!audioContext){try{audioContext=new(window.AudioContext||window.webkitAudioContext)();}catch{}}
@@ -99,6 +117,8 @@
   function note(frequency,duration=.12,volume=.045,delay=0,type='sine'){
     if(muted||!audioContext||audioContext.state!=='running')return;
     const at=audioContext.currentTime+delay,o=audioContext.createOscillator(),g=audioContext.createGain();
+    const voice={o,g,stopping:false};activeVoices.add(voice);
+    o.onended=()=>{activeVoices.delete(voice);o.disconnect();g.disconnect();};
     o.type=type;o.frequency.setValueAtTime(frequency,at);g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(volume,at+.012);g.gain.exponentialRampToValueAtTime(.001,at+duration);
     o.connect(g);g.connect(audioContext.destination);o.start(at);o.stop(at+duration+.02);
   }
@@ -236,7 +256,7 @@
     keys.add(e.code);if(jumpKeys.includes(e.code))jumpQueued=true;if(e.code==='KeyE')reloadQueued=true;
   });
   addEventListener('keyup',e=>keys.delete(e.code));
-  function loseFocus(){presentationPaused=true;clearInput();if(game.status==='playing'){game.pause();syncUI();}}
+  function loseFocus(){presentationPaused=true;clearInput();if(game.status==='playing'){game.pause();syncUI();}else syncSound();}
   addEventListener('focus',()=>{presentationPaused=false;});
   addEventListener('blur',loseFocus);document.addEventListener('visibilitychange',()=>{if(document.hidden)loseFocus();else presentationPaused=false;});
   addEventListener('pagehide',saveJourney);
@@ -252,7 +272,10 @@
     else if(!e.shiftKey&&document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0].focus();}
   });
   function controls(){const t=[...touch.values()];return{axis:Number(keys.has('ArrowRight')||keys.has('KeyD')||t.includes('right'))-Number(keys.has('ArrowLeft')||keys.has('KeyA')||t.includes('left')),run:touchRun||keys.has('ShiftLeft')||keys.has('ShiftRight'),jumpPressed:jumpQueued,jumpHeld:jumpKeys.some(k=>keys.has(k))||t.includes('jump'),fire:keys.has('KeyF')||keys.has('KeyJ')||t.includes('fire'),reloadPressed:reloadQueued};}
-  function resize(){const width=canvas.clientWidth,height=canvas.clientHeight;if(!width||!height)return;const ratio=width/height;W=Math.max(640,Math.round(ratio*720));H=W/ratio;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+  function resize(){const width=canvas.clientWidth,height=canvas.clientHeight;if(!width||!height)return;const ratio=width/height;
+    const touchLandscape=mobileScreen.matches&&width>height;
+    W=touchLandscape?TrailCore.clamp(Math.round(width*1.25),820,1100):Math.max(640,Math.round(ratio*720));
+    H=W/ratio;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
   new ResizeObserver(resize).observe(canvas);
   document.addEventListener('fullscreenchange',()=>{if(landscapeMode&&landscapeFullscreen&&!document.fullscreenElement)leaveLandscape(false);syncScreenMode();});
   addEventListener('resize',syncScreenMode);addEventListener('orientationchange',syncScreenMode);
@@ -279,7 +302,7 @@
   }
   function platform(s,theme,t){
     const x=s.x-game.camera,y=s.y;if(x+s.w<-20||x>W+20)return;
-    const isGround=s.kind==='ground',bottom=isGround?H+30:y+43;
+    const isGround=s.kind==='ground',bottom=isGround?Math.max(720,H+30):y+43;
     const grad=ctx.createLinearGradient(0,y,0,bottom);grad.addColorStop(0,theme.earth);grad.addColorStop(1,theme.deep);
     ctx.fillStyle=grad;ctx.beginPath();ctx.moveTo(x+3,y+4);ctx.lineTo(x+s.w-3,y+4);ctx.lineTo(x+s.w,bottom-(isGround?0:15));ctx.lineTo(x+s.w*.72,bottom);ctx.lineTo(x+14,bottom-3);ctx.lineTo(x,bottom-15);ctx.closePath();ctx.fill();
     if(game.index===2||game.index===5){
@@ -442,7 +465,9 @@
     else if(Math.abs(game.camera-target)>900&&p.invulnerable>1.4)game.camera=target;
     else game.camera+=(target-game.camera)*(1-Math.exp(-dt*6));
     background(theme,t);
-    const verticalOffset=Math.max(0,H-720)*.55;
+    let verticalOffset=H<720?H*.78-570:Math.max(0,H-720)*.55;
+    // Keep elevated routes and spring jumps in view after zooming the phone camera.
+    if(H<720&&game.status!=='menu'&&!arrival)verticalOffset=Math.max(verticalOffset,H*.24-(p.y+p.h-94));
     const sceneryView={id:game.level.id,camera:game.camera,width:W,height:H,time:t,reduced:reducedMotion.matches,horizon:570+verticalOffset};
     TrailScenery.back(ctx,sceneryView);
     ctx.save();ctx.translate(0,verticalOffset);
@@ -507,6 +532,7 @@
   }
   function frame(now){
     const dt=Math.min(.05,(now-last)/1000||0);last=now;visualTime+=dt;
+    updateAmbience(dt);
     if(ready&&!document.hidden){
       accumulator+=dt;
       while(accumulator>=1/120){const input=controls();game.step(1/120,input);jumpQueued=false;reloadQueued=false;accumulator-=1/120;}

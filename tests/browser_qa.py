@@ -14,7 +14,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'qa'
 THEMES = ['grassland', 'forest', 'alpine', 'lagoon', 'desert', 'cavern']
-SOURCE_FILES = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js']
+SOURCE_FILES = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js'] + [f'assets/{theme}.mp3' for theme in THEMES]
 CAPTURE = '''(() => {
  let core;
  Object.defineProperty(window, 'TrailCore', {
@@ -320,7 +320,7 @@ def run(browser,url,args,checks,errors,resources):
       image.onerror=()=>resolve({file,error:true});image.src='assets/'+file;
     })))''',image_files)
     assert all(item.get('width',0)>0 for item in image_result),image_result
-    audio_result=offline.evaluate('''()=>Promise.all(['grassland','forest','alpine'].map(name=>new Promise(resolve=>{
+    audio_result=offline.evaluate('''()=>Promise.all(['grassland','forest','alpine','lagoon','desert','cavern'].map(name=>new Promise(resolve=>{
       const audio=new Audio();const timer=setTimeout(()=>resolve({name,error:'timeout'}),6000);
       audio.onloadedmetadata=()=>{clearTimeout(timer);resolve({name,duration:audio.duration});};
       audio.onerror=()=>{clearTimeout(timer);resolve({name,error:audio.error?.code});};

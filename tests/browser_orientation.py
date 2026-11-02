@@ -34,6 +34,14 @@ with local_url(None) as url,sync_playwright() as p:
         page.wait_for_timeout(150)
         assert page.evaluate('world.clientWidth>world.clientHeight'), 'Canvas must retain a landscape layout before CSS rotation'
         assert page.evaluate('world.width>world.height'), 'Canvas backing size must follow pre-transform layout'
+        metrics=page.evaluate('({worldWidth:world.width/devicePixelRatio,heroPixels:94*world.clientWidth/(world.width/devicePixelRatio)})')
+        sizes={s:inside(page,s) for s in ['[data-control=left]','[data-control=right]','[data-control=fire]','[data-control=jump]']}
+        failures=[]
+        if metrics['worldWidth']>1100 or metrics['heroPixels']<60:failures.append(('view_too_wide',metrics))
+        for selector,rect in sizes.items():
+            minimum=76 if 'jump' in selector else 64
+            if min(rect['width'],rect['height'])<minimum:failures.append(('touch_target_too_small',selector,rect))
+        assert not failures,failures
         for selector in ['[data-control=left]','[data-control=right]','[data-control=fire]','[data-control=jump]','#touchReload','#touchRun','#pause']:
             inside(page,selector)
         before=state(page);cdp=page.context.new_cdp_session(page)
@@ -58,6 +66,39 @@ with local_url(None) as url,sync_playwright() as p:
         assert page.locator('#touchControls').is_visible()
         checks.append('same page: physical viewport rotates, exits and re-enters cleanly; touch controls stay inside viewport')
         page.close()
+        for size in [{'width':667,'height':375},{'width':740,'height':360},{'width':568,'height':320}]:
+            page=browser.new_page(viewport=size,has_touch=True,is_mobile=True,device_scale_factor=1)
+            attach(page,'small-landscape',errors,resources);page.goto(url);ready(page)
+            page.locator('#start').scroll_into_view_if_needed();page.click('#start');page.wait_for_timeout(150)
+            metrics=page.evaluate('({worldWidth:world.width,heroPixels:94*world.clientWidth/world.width})')
+            assert metrics['worldWidth']<=1100 and metrics['heroPixels']>=60,metrics
+            rects=[]
+            for s in ['[data-control=left]','[data-control=right]','[data-control=fire]','[data-control=jump]','#touchReload','#touchRun']:
+                rects.append(inside(page,s))
+            assert all(not(a['x']<b['x']+b['width'] and a['x']+a['width']>b['x'] and a['y']<b['y']+b['height'] and a['y']+a['height']>b['y']) for i,a in enumerate(rects) for b in rects[i+1:]),rects
+            page.close()
+        checks.append('568/667/740px natural landscape: larger actor, larger non-overlapping controls and no clipping')
+        page=browser.new_page(viewport={'width':844,'height':390},has_touch=True,is_mobile=True,device_scale_factor=1)
+        attach(page,'upper-route',errors,resources)
+        page.add_init_script('''window.__qaHeroTops=[];
+          const draw=CanvasRenderingContext2D.prototype.drawImage;
+          CanvasRenderingContext2D.prototype.drawImage=function(...args){
+            if(args.length===9&&args[0].src?.endsWith('/hero.png')){
+              const m=this.getTransform();__qaHeroTops.push((m.f+args[6]*m.d)/Math.min(devicePixelRatio,2));
+            }return draw.apply(this,args);
+          };''')
+        page.goto(url);ready(page)
+        for index in range(6):
+            if index:page.click('#home')
+            page.locator(f'.level-choice[data-level="{index}"]').click();page.click('#start')
+            # Exercise a real jump from each map's existing highest ledge.
+            page.evaluate('''() => {const g=__qaGame,s=g.platforms.filter(s=>s.kind!=="ground").sort((a,b)=>a.y-b.y)[0];
+              Object.assign(g.player,{x:s.x+20,y:s.y-g.player.h,vx:0,vy:0,grounded:true,coyote:.11,onPlatform:s.id,invulnerable:2});
+              window.__qaHeroTops=[];}''')
+            page.keyboard.down('Space');page.wait_for_timeout(680);page.keyboard.up('Space')
+            tops=page.evaluate('__qaHeroTops')
+            assert len(tops)>10 and min(tops)>=0,('upper jump leaves view',index,min(tops))
+        page.close();checks.append('all six maps: real jumps from highest ledges keep the entire hero visible')
         page=browser.new_page(viewport={'width':390,'height':844},device_scale_factor=1,is_mobile=True,has_touch=True)
         attach(page,'native-denied',errors,resources)
         page.add_init_script('''window.__orientationCalls=[];

@@ -1,6 +1,6 @@
 {
   "passed": true,
-  "verified_at_utc": "2026-11-02T06:31:30.557251+00:00",
+  "verified_at_utc": "2026-11-02T08:40:34.935541+00:00",
   "checks": [
     "keyboard-only arrival autofocus keeps the skip button inside the clipped stage",
     "natural 7-second final sequence; help interruption; frozen physics, score and timer; results and focus",
@@ -17,12 +17,18 @@
   "resource_errors": [],
   "source_sha256": {
     "index.html": "0ccfeac454b18d7bfba3acc65d6b5ffeefc1263fdb4b85b0b93f8760f2624a38",
-    "style.css": "0c9328b24239197afdc5c82afecdfa353530568794a9cef68fc661f9590697c7",
+    "style.css": "fe56031b359f9cb74716ef68849bafea4d4caedc99b409482346c78ac718546f",
     "combat.js": "75d2628c6793e695fa1ebae5611cb6b7a228bda6f907480bc78c537791066c7d",
     "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
     "scenery.js": "0ef472072490eddde30bf1a45ce374f840f0ba7bfe8daa40e13b869e9dd9df39",
     "finale.js": "4bffb2a5d2b28cb4c228a63765c7e7c08867ecc71e1263b3ce44c220bfa5a8ae",
-    "game.js": "ff669825842efa430ce4572a37bed619f292d413d522caabc7072adf82e98b7a",
-    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
+    "game.js": "bfbe5bb06006b9792cc8c4fe8392af46e8614748b2c3c079ad1062fc79966dc8",
+    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4",
+    "assets/grassland.mp3": "d3ea5233198bbf9f3f0b4f30a2995bd235b7ff100d9862f3d9c788d612f31b03",
+    "assets/forest.mp3": "a69e01849ad1b87638aeed07e9aa7d69aa385653ff53c7babcd48a7eaedf83f2",
+    "assets/alpine.mp3": "052f8521d08486917a9c9fa0ee5509b8718a6663f8f2d740164cf5bc06c0335a",
+    "assets/lagoon.mp3": "888f5d3524c4d29e5be4364e452ffca97558792dcfaa23fa50fe36c798f57fe3",
+    "assets/desert.mp3": "38a1d087ba6ae9a51c0c431c54d7dbfa6904cced1adfb4ef4834b04accdcb990",
+    "assets/cavern.mp3": "ee4be0ae4c1f097726fe4459a1ff014e1f0f98c4811fa3a336858305f23eb46b"
   }
 }

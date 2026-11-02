@@ -10,7 +10,8 @@ from urllib.request import urlopen
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parent
-ARCHIVE = ROOT.parent / 'windward_trails_game_v4_1.zip'
+ARCHIVE = ROOT.parent / 'windward_trails_game_v4_2.zip'
+THEMES = ['grassland', 'forest', 'alpine', 'lagoon', 'desert', 'cavern']
 
 
 def main():
@@ -25,21 +26,32 @@ def main():
     assert presentation['passed'] and not presentation['console_errors'], 'Run presentation QA first.'
     orientation=json.loads((ROOT/'qa/orientation-verification.json').read_text(encoding='utf-8'))
     assert orientation['passed'] and not orientation['console_errors'], 'Run portrait-to-landscape QA first.'
-    for name in ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js']:
+    audio=json.loads((ROOT/'qa/audio-browser-verification.json').read_text(encoding='utf-8'))
+    assert audio['passed'] and not audio['console_errors'] and not audio['resource_errors'], 'Run audio browser QA first.'
+    quality=json.loads((ROOT/'qa/audio-quality.json').read_text(encoding='utf-8'))
+    for theme in THEMES:
+        track = quality['after'][theme]
+        assert track['finite'] and track['decoded_seconds'] == 40 and track['channels'] == 2, theme
+        assert track['true_peak_dbfs'] < -1 and track['integrated_lufs'] < -24, theme
+        assert track['sha256'] == hashlib.sha256((ROOT/f'assets/{theme}.mp3').read_bytes()).hexdigest(), f'Rerun audio quality QA for {theme}'
+    sources = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js']
+    sources += [f'assets/{theme}.mp3' for theme in THEMES]
+    for name in sources:
         actual = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
         assert browser.get('source_sha256', {}).get(name) == actual, f'Rerun browser QA after changing {name}'
         assert traps.get('source_sha256', {}).get(name) == actual, f'Rerun trap QA after changing {name}'
         assert presentation.get('source_sha256', {}).get(name) == actual, f'Rerun presentation QA after changing {name}'
         assert orientation.get('source_sha256', {}).get(name) == actual, f'Rerun orientation QA after changing {name}'
+        assert audio.get('source_sha256', {}).get(name) == actual, f'Rerun audio browser QA after changing {name}'
     for name in ['combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js']:
         subprocess.run(['node', '--check', name], cwd=ROOT, check=True, capture_output=True)
     core = subprocess.run(['node', '--test', 'tests/core.test.cjs', 'tests/combat.test.cjs', 'tests/presentation.test.cjs'], cwd=ROOT,
                           check=True, capture_output=True, encoding='utf-8')
     required = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'run_game.py',
                 'assets/hero.png', 'assets/ranger.png', 'assets/mage.png', 'assets/cat.png', 'assets/sprites.js']
-    for theme in ['grassland', 'forest', 'alpine']:
+    for theme in THEMES:
         required.extend([f'assets/bg-{theme}.jpg', f'assets/{theme}.mp3'])
-    required.extend(f'assets/bg-{theme}.jpg' for theme in ['lagoon', 'desert', 'cavern'])
+    required.extend(['assets/audio-attribution.md', 'tools/render_ambience.py'])
     for name in required:
         assert (ROOT / name).is_file() and (ROOT / name).stat().st_size > 0, name
     html = (ROOT / 'index.html').read_text(encoding='utf-8')
@@ -70,6 +82,7 @@ def main():
     files = [ROOT / name for name in top]
     files += sorted(p for p in (ROOT / 'assets').iterdir() if p.is_file())
     files += sorted(p for p in (ROOT / 'tests').iterdir() if p.is_file())
+    files += sorted((ROOT / 'tools').glob('*.py'))
     files += sorted((ROOT / 'docs').rglob('*.md'))
     files += sorted(p for p in (ROOT / 'qa').iterdir()
                     if p.is_file() and p.name not in ['verification.json', 'contract-verification.json']
@@ -84,6 +97,8 @@ def main():
         'browser': browser,
         'presentation': presentation,
         'orientation': orientation,
+        'audio': audio,
+        'audio_quality': quality,
         'archive': ARCHIVE.name,
         'sha256': {str(p.relative_to(ROOT)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest()
                    for p in files},

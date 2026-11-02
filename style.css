@@ -155,19 +155,27 @@ body.landscape-rotated .game-app{inset:auto;left:50%;top:50%;width:100dvh;height
 .landscape-mode .keyboard-hint{display:none}.landscape-mode .hud{inset:10px 14px auto}
 .landscape-mode .hud-left{padding:6px 10px;gap:10px}.landscape-mode #hearts{font-size:16px}.landscape-mode .coin-count{font-size:12px;min-width:40px}
 .landscape-mode .hud-center{top:0;font-size:11px}.landscape-mode #activeCharacter{font-size:11px;margin-top:4px}
-.landscape-mode .progress{width:100px;margin-top:7px}.landscape-mode .pause{width:36px;height:36px;min-height:36px}
+.landscape-mode .progress{width:100px;margin-top:7px}.landscape-mode .pause{width:44px;height:44px;min-height:44px}
 .landscape-mode .ammo-hud{top:45px;padding:6px 10px;font-size:11px;gap:3px 10px}
 .landscape-mode #reloadStatus{font-size:11px}.landscape-mode #ammoPips{font-size:11px;padding-bottom:3px}
 .landscape-mode .boss-hud{top:65px;left:50%;right:auto;transform:translateX(-50%);width:260px;padding:7px 12px}
 .landscape-mode .boss-hud>div:first-child{display:flex;font-size:11px}.landscape-mode #bossPhase{font-size:11px;margin:0}
 .landscape-mode .touch-controls{bottom:12px;padding:0 max(16px,env(safe-area-inset-left),env(safe-area-inset-top))}
-.landscape-mode .touch-direction,.landscape-mode .touch-actions{gap:9px}.landscape-mode .touch-controls button{width:48px;height:48px}
-.landscape-mode .touch-controls .touch-fire{width:50px;height:50px;font-size:12px}.landscape-mode .touch-controls .touch-jump{width:58px;height:58px;font-size:12px;transform:none}
-.landscape-mode .touch-controls .touch-run{left:max(16px,env(safe-area-inset-left),env(safe-area-inset-top));bottom:62px;width:104px;height:35px}
-.landscape-mode .touch-controls .touch-reload{right:max(16px,env(safe-area-inset-right));bottom:70px;width:126px;height:35px}
+.landscape-mode .touch-direction,.landscape-mode .touch-actions{gap:12px}.landscape-mode .touch-controls button{width:64px;height:64px}
+.landscape-mode .touch-controls .touch-fire{width:68px;height:68px;font-size:14px}.landscape-mode .touch-controls .touch-jump{width:80px;height:80px;font-size:15px;transform:none}
+.landscape-mode .touch-controls .touch-run{left:max(16px,env(safe-area-inset-left),env(safe-area-inset-top));bottom:82px;width:112px;height:44px;font-size:12px}
+.landscape-mode .touch-controls .touch-reload{right:max(16px,env(safe-area-inset-right));bottom:94px;width:140px;height:44px;font-size:12px}
 .landscape-mode .trap-status{bottom:100px;font-size:11px}.landscape-mode .toast{top:30%;font-size:11px}
 .landscape-mode .modal{padding:10px}.landscape-mode .modal-card{padding:16px 22px;width:360px;max-width:95%;max-height:100%;overflow:auto}
 .landscape-mode .modal-card h2{font-size:23px;margin:8px 0}.landscape-mode .modal-card p:not(.eyebrow){font-size:11px;line-height:1.6;margin:7px 0}
 .landscape-mode .modal-actions{margin-top:10px;gap:6px}.landscape-mode .modal-actions button{padding:9px}.landscape-mode .stats{margin-top:10px;padding-top:10px}.landscape-mode .stat strong{font-size:20px}
 .landscape-mode .finale-caption{top:36%}.landscape-mode .finale-caption h2{font-size:25px;margin-bottom:7px}
 .landscape-mode .skip-finale{bottom:32px;right:16px;min-height:44px;padding:8px 14px}
+@media(pointer:coarse) and (orientation:landscape){
+  .touch-direction,.touch-actions{gap:12px}.touch-controls{bottom:12px}
+  .touch-controls button{width:64px;height:64px}.touch-controls .touch-fire{width:68px;height:68px;font-size:14px}
+  .touch-controls .touch-jump{width:80px;height:80px;font-size:15px;transform:none}
+  .touch-controls .touch-run{bottom:82px;width:112px;height:44px;font-size:12px}
+  .touch-controls .touch-reload{bottom:94px;width:140px;height:44px;font-size:12px}
+  .pause{width:44px;height:44px}
+}
