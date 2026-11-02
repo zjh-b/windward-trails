@@ -1,8 +1,9 @@
 (function(root,factory){
-  const api=factory(typeof module==='object'&&module.exports?require('./combat.js'):root.TrailCombat);
+  const node=typeof module==='object'&&module.exports;
+  const api=factory(node?require('./combat.js'):root.TrailCombat,node?require('./items.js'):root.TrailItems);
   if(typeof module==='object'&&module.exports) module.exports=api;
   else root.TrailCore=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(Combat){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Combat,Items){
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const overlap=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
@@ -63,6 +64,7 @@
       this.player={x:110,y:500,w:34,h:70,vx:0,vy:0,grounded:true,coyote:.11,buffer:0,cut:false,invulnerable:0,facing:1,onPlatform:'g0'};
       this.cat={x:62,y:570,facing:1};this.trail=[];this.camera=0;
       Combat.setup(this);
+      Items.setup(this);
     }
     start(index=0,characterId=this.character.id){this.setCharacter(characterId);this.bank=0;this.campaignTime=0;this.deaths=0;this.loadLevel(index);}
     preview(index){this.loadLevel(index);this.status='menu';}
@@ -76,9 +78,12 @@
       const p=this.player;Object.assign(p,{x:this.checkpoint.x,y:this.checkpoint.y,vx:0,vy:0,grounded:true,coyote:.11,buffer:0,cut:false,invulnerable:1.6,onPlatform:null});
       this.cat={x:p.x-48,y:p.y+p.h,facing:1};this.trail=[];this.respawnDelay=0;
       Combat.reset(this);
+      this.effects={shield:0,magnet:0};
     }
     hurt(force=false){
       if(this.status!=='playing'||this.respawnDelay>0||(!force&&this.player.invulnerable>0))return;
+      if(Items.absorb(this,force))return;
+      this.effects={shield:0,magnet:0};
       this.hearts--;this.deaths++;this.events.push({type:'hurt',x:this.player.x,y:this.player.y});
       if(this.hearts<=0)this.status='gameOver';else this.respawnDelay=.65;
     }
@@ -93,6 +98,7 @@
       const p=this.player;
       if(this.respawnDelay>0){this.respawnDelay-=dt;if(this.respawnDelay<=0)this.respawn();return;}
       p.invulnerable=Math.max(0,p.invulnerable-dt);
+      Items.tick(this,dt);
       Combat.prepare(this,dt,input);
       for(const s of this.platforms){
         if(s.kind==='moving'){
@@ -114,10 +120,12 @@
       if(p.buffer>0&&p.coyote>0)this.jump();
       if(!input.jumpHeld&&p.vy<-280&&!p.cut){p.vy*=.50;p.cut=true;}
       p.x+=p.vx*dt;p.x=clamp(p.x,0,this.level.width-p.w);
-      for(const s of this.platforms){if(s.kind==='ground'&&overlap(p,s)){
+      // Reward blocks use the visible 94-unit head, while the ordinary body stays 70 units.
+      const headBody={x:p.x,y:p.y-24,w:p.w,h:p.h+24};
+      for(const s of this.platforms){if((s.kind==='ground'&&overlap(p,s))||(s.kind==='reward'&&overlap(headBody,s))){
         if(p.vx>0)p.x=s.x-p.w;else if(p.vx<0)p.x=s.x+s.w;p.vx=0;
       }}
-      const bottom=p.y+p.h;
+      const bottom=p.y+p.h,head=p.y-24;
       p.vy=Math.min(980,p.vy+1800*dt);p.y+=p.vy*dt;p.grounded=false;p.onPlatform=null;
       if(p.vy>=0){
         let floor=null;
@@ -125,6 +133,14 @@
           if(p.x+p.w>s.x+1&&p.x<s.x+s.w-1&&bottom<=s.y+.6&&p.y+p.h>=s.y){if(!floor||s.y<floor.y)floor=s;}
         }
         if(floor){p.y=floor.y-p.h;p.vy=0;p.grounded=true;p.onPlatform=floor.id;}
+      }else{
+        let ceiling=null;
+        for(const s of this.blocks){
+          if(p.x+p.w>s.x+1&&p.x<s.x+s.w-1&&head>=s.y+s.h-.6&&p.y-24<=s.y+s.h){
+            if(!ceiling||s.y+s.h>ceiling.y+ceiling.h)ceiling=s;
+          }
+        }
+        if(ceiling){p.y=ceiling.y+ceiling.h+24;p.vy=0;Items.bump(this,ceiling);}
       }
       for(const spring of this.springs){if(p.grounded&&p.x+p.w>spring.x&&p.x<spring.x+spring.w&&Math.abs(p.y+p.h-570)<2)this.jump(870,'spring');}
       for(const c of this.coins){
@@ -146,24 +162,33 @@
     }
     snapshot(){
       if(!['playing','paused','levelComplete'].includes(this.status)||this.hearts<=0)return null;
-      return {version:1,index:this.index,character:this.character.id,status:this.status==='levelComplete'?'levelComplete':'playing',
+      return {version:2,index:this.index,character:this.character.id,status:this.status==='levelComplete'?'levelComplete':'playing',
         hearts:this.hearts,bank:this.bank,campaignTime:this.campaignTime,elapsed:this.elapsed,deaths:this.deaths,
         checkpoint:this.checkpoints.filter(c=>c.active).length,coins:this.coins.map(c=>c.taken),enemies:this.enemies.map(e=>e.alive),
-        guards:this.guards.map(e=>e.hp),boss:this.boss.hp,ammo:this.weapon.ammo,reloadLeft:this.weapon.reloadLeft};
+        guards:this.guards.map(e=>e.hp),boss:this.boss.hp,ammo:this.weapon.ammo,reloadLeft:this.weapon.reloadLeft,
+        blocks:this.blocks.map(({id,used,reward})=>({id,used,reward})),bonusCoins:this.bonusCoins,effects:{...this.effects}};
     }
     restore(data){
-      if(!data||typeof data!=='object'||data.version!==1||!Number.isInteger(data.index)||data.index<0||data.index>=levels.length||!characters.some(c=>c.id===data.character)||!['playing','levelComplete'].includes(data.status))return false;
+      if(!data||typeof data!=='object'||![1,2].includes(data.version)||!Number.isInteger(data.index)||data.index<0||data.index>=levels.length||!characters.some(c=>c.id===data.character)||!['playing','levelComplete'].includes(data.status))return false;
       const g=new Game();g.start(data.index,data.character);
       const integer=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
       const finite=(value,max)=>Number.isFinite(value)&&value>=0&&value<=max;
       if(!integer(data.hearts,1,3)||!integer(data.bank,0,10000)||!integer(data.deaths,0,100000)||!finite(data.elapsed,86400)||!finite(data.campaignTime,86400)||!integer(data.checkpoint,0,g.checkpoints.length)||!integer(data.ammo,0,g.weapon.capacity)||!finite(data.reloadLeft,g.weapon.reloadDuration))return false;
-      if(!Array.isArray(data.coins)||data.coins.length!==g.coins.length||!data.coins.every(v=>typeof v==='boolean')||!Array.isArray(data.enemies)||data.enemies.length!==g.enemies.length||!data.enemies.every(v=>typeof v==='boolean')||!Array.isArray(data.guards)||data.guards.length!==g.guards.length||!data.guards.every((v,i)=>integer(v,0,g.guards[i].maxHp))||!integer(data.boss,0,g.boss.maxHp))return false;
+      if(!Array.isArray(data.coins)||data.coins.length!==g.coins.length||!Array.from(data.coins).every(v=>typeof v==='boolean')||!Array.isArray(data.enemies)||data.enemies.length!==g.enemies.length||!Array.from(data.enemies).every(v=>typeof v==='boolean')||!Array.isArray(data.guards)||data.guards.length!==g.guards.length||!Array.from(data.guards).every((v,i)=>integer(v,0,g.guards[i].maxHp))||!integer(data.boss,0,g.boss.maxHp))return false;
       if(data.status==='levelComplete'&&(data.boss!==0||data.index===levels.length-1))return false;
-      g.coins.forEach((c,i)=>c.taken=data.coins[i]);g.collected=data.coins.filter(Boolean).length;
+      if(data.version===2){
+        if(!Array.isArray(data.blocks)||data.blocks.length!==g.blocks.length||!Array.from(data.blocks).every((b,i)=>b&&b.id===g.blocks[i].id&&typeof b.used==='boolean'&&(b.used?typeof b.reward==='string'&&Object.hasOwn(Items.rewards,b.reward):b.reward===null)))return false;
+        const count=reward=>data.blocks.filter(b=>b.reward===reward).length;
+        if(!integer(data.bonusCoins,count('coins')*5,(count('coins')+count('heal'))*5)||data.bonusCoins%5!==0)return false;
+        if(!data.effects||!finite(data.effects.shield,8)||!finite(data.effects.magnet,10)||(data.effects.shield>0&&!count('shield'))||(data.effects.magnet>0&&!count('magnet')))return false;
+        g.blocks.forEach((b,i)=>Object.assign(b,{used:data.blocks[i].used,reward:data.blocks[i].reward}));g.bonusCoins=data.bonusCoins;
+      }
+      g.coins.forEach((c,i)=>c.taken=data.coins[i]);g.collected=data.coins.filter(Boolean).length+g.bonusCoins;
       g.enemies.forEach((e,i)=>e.alive=data.enemies[i]);g.guards.forEach((e,i)=>e.hp=data.guards[i]);g.boss.hp=data.boss;
       g.checkpoints.forEach((c,i)=>c.active=i<data.checkpoint);
       if(data.checkpoint)g.checkpoint={x:g.checkpoints[data.checkpoint-1].x+38,y:500};
       g.respawn();g.weapon.ammo=data.ammo;g.weapon.reloadLeft=data.reloadLeft;
+      if(data.version===2)g.effects={shield:data.effects.shield,magnet:data.effects.magnet};
       Object.assign(g,{hearts:data.hearts,bank:data.bank,campaignTime:data.campaignTime,elapsed:data.elapsed,deaths:data.deaths,status:data.status});
       Object.assign(this,g);return true;
     }

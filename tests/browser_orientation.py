@@ -48,7 +48,7 @@ with local_url(None) as url,sync_playwright() as p:
         right=touch_point(page,'[data-control=right]',1);jump=touch_point(page,'[data-control=jump]',2);fire=touch_point(page,'[data-control=fire]',3)
         cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[right]});page.wait_for_timeout(180)
         cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[right,jump,fire]});page.wait_for_timeout(160)
-        assert state(page)['x']>before['x']+40 and state(page)['vy']<0
+        assert state(page)['x']>before['x']+40 and state(page)['y']<before['y']-20
         assert page.evaluate('__qaGame.weapon.ammo')<6
         cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
         page.screenshot(path=str(OUT/'portrait-horizontal-play.png'))

@@ -10,7 +10,7 @@
   const mobileScreen=matchMedia('(pointer:coarse)');
   let landscapeMode=false,landscapeFullscreen=false,orientationRequest=0;
   const finale=new TrailFinale.Finale();let presentationPaused=false;
-  const images={},particles=[];
+  const images={},particles=[],rewardPops=[];let rewardNoticeLeft=0;
   let renderedHearts=-1,renderedCoins=-1,renderedAmmo='',renderedTrap='';
   const themes={
     grassland:{sky:'#9fc7ca',earth:'#8a7954',deep:'#575f3e',rim:'#658143',light:'#c0cd7d',grass:'#8caa57',accent:'#e8cf75',mist:'#c9d9b9'},
@@ -132,6 +132,8 @@
     if(type==='hit')note(210,.08,.025,0,'triangle');
     if(type==='reload'){note(290,.06,.02);note(240,.07,.015,.12);}
     if(type==='reloaded')note(720,.08,.025);
+    if(type==='reward'){note(587,.12,.022);note(784,.17,.018,.09);}
+    if(type==='shield')note(330,.14,.025,0,'triangle');
     if(type==='bossDefeated')[392,523,659,784].forEach((f,i)=>note(f,.4,.04,i*.12));
     if(type==='checkpoint'||type==='complete')[523,659,784,1046].forEach((f,i)=>note(f,.32,.035,i*.1));
   }
@@ -154,6 +156,8 @@
     helpOpen=false;
     saveJourney();
     const state=game.status,playing=state!=='menu';
+    if(state==='menu'||state==='gameOver'||state==='levelComplete'||state==='won'||game.time===0){rewardPops.length=0;rewardNoticeLeft=0;}
+    $('rewardNotice').hidden=state!=='playing'||rewardNoticeLeft<=0;
     $('intro').hidden=playing;$('hud').hidden=!playing;$('playHint').hidden=state!=='playing';$('touchControls').hidden=state!=='playing';
     $('stage').classList.toggle('playing',playing);$('modal').hidden=true;
     resize();
@@ -192,7 +196,7 @@
     if(helpOpen)return;helpOpen=true;
     $('finale').hidden=true;
     helpReturn=game.status;if(game.status==='playing')game.status='paused';previousStatus=game.status;clearInput();syncSound();saveJourney();
-    modal('HOW TO WANDER','向远方，轻轻一跃','A / D 或 ← / → 移动，空格 / W / ↑ 跳跃，Shift 奔跑。\nF / J 按住射击，E 换弹；空弹夹自动补充，备用弹药不限。\n射击朝向角色面朝的方向，平台可以挡住弹丸。\n跳过荆棘、沼泽和流沙；发亮的陷阱与守卫正在蓄力。\n首次点亮检查点恢复生命。击败 Boss 后才能进入终点。\nEsc / P 暂停，R 重开。主菜单可继续上次旅程。',[],[['知道了，出发',closeHelp]]);
+    modal('HOW TO WANDER','向远方，轻轻一跃','A / D 或 ← / → 移动，空格 / W / ↑ 跳跃，Shift 奔跑。\nF / J 按住射击，E 换弹；空弹夹自动补充，备用弹药不限。\n从下方顶问号方块：随机获得 5 金币、治疗花、8 秒护盾或 10 秒磁力。每块只领一次，道具自动生效。\n治疗花恢复一颗心，满血改为 5 金币；护盾挡一次伤害，不能防止坠落；磁力吸引附近金币。\n限时效果仅在本关有效，暂停不计时，受伤复活清除；继续旅程保留剩余时长。\n跳过陷阱，留意守卫蓄力。检查点恢复生命，击败 Boss 后抵达终点。\nEsc / P 暂停，R 重开。',[],[['知道了，出发',closeHelp]]);
   }
   function closeHelp(){game.status=helpReturn;syncUI();if(game.status==='playing'){unlockAudio();canvas.focus();}else if(game.status==='menu')$('help').focus();}
   $('start').onclick=()=>begin();$('home').onclick=home;$('help').onclick=showHelp;
@@ -416,12 +420,18 @@
   }
   function battleHUD(){
     const w=game.weapon,key=`${game.character.id}:${w.ammo}:${Math.ceil(w.reloadLeft*10)}`;
-    if(key!==renderedAmmo){renderedAmmo=key;$('weaponName').textContent=w.name;$('ammoCount').textContent=`${w.ammo} / ${w.capacity}`;$('ammoPips').textContent='●'.repeat(w.ammo)+'○'.repeat(w.capacity-w.ammo);$('reloadStatus').textContent=w.reloadLeft>0?`换弹中 · ${w.reloadLeft.toFixed(1)} 秒`:(matchMedia('(pointer:coarse)').matches?'按住射击 · 点击换弹':'F / J 射击 · E 换弹');$('ammoPips').style.setProperty('--reload',String(w.reloadLeft>0?1-w.reloadLeft/w.reloadDuration:1));}
+    if(key!==renderedAmmo){renderedAmmo=key;$('weaponName').textContent=w.name;$('ammoCount').textContent=mobileScreen.matches&&w.reloadLeft>0?`${w.reloadLeft.toFixed(1)}s`:`${w.ammo} / ${w.capacity}`;$('ammoCount').setAttribute('aria-label',w.reloadLeft>0?`换弹剩余 ${w.reloadLeft.toFixed(1)} 秒`:`弹药 ${w.ammo} / ${w.capacity}`);$('ammoPips').textContent='●'.repeat(w.ammo)+'○'.repeat(w.capacity-w.ammo);$('reloadStatus').textContent=w.reloadLeft>0?`换弹中 · ${w.reloadLeft.toFixed(1)} 秒`:(mobileScreen.matches?'弹药':'F 射击 · E 换弹');$('ammoPips').style.setProperty('--reload',String(w.reloadLeft>0?1-w.reloadLeft/w.reloadDuration:1));}
     const visible=game.status!=='menu'&&game.boss.active&&game.boss.hp>0;
     $('bossHud').hidden=!visible;
     if(visible){$('bossName').textContent=game.encounter.boss;$('bossPhase').textContent=game.boss.windup>0?'正在蓄力 · 准备躲避':game.boss.phase===2?'第二阶段':'守望者';$('bossHealth').style.width=`${game.boss.hp/game.boss.maxHp*100}%`;}
     const message=game.status==='playing'?(game.player.trap==='quicksand'?`流沙下陷 ${Math.round(game.player.sink*100)}% · 跳跃脱离`:game.player.trap==='swamp'?'沼泽减速 · 跳跃脱离':''):'';
     if(message!==renderedTrap){renderedTrap=message;$('trapStatus').hidden=!message;$('trapStatus').textContent=message;}
+    let anyEffect=false;
+    for(const [kind,id]of [['shield','shieldEffect'],['magnet','magnetEffect']]){
+      const remaining=Math.ceil(game.effects[kind]),element=$(id);element.hidden=remaining<=0;
+      if(remaining>0){anyEffect=true;const value=`${remaining}s`;if(element.querySelector('[data-time]').textContent!==value)element.querySelector('[data-time]').textContent=value;element.setAttribute('aria-label',`${kind==='shield'?'护盾':'磁力'}，剩余 ${remaining} 秒`);}
+    }
+    $('itemHud').hidden=!anyEffect||game.status==='menu';
   }
   function campLight(s,t){
     const x=game.level.width-107-game.camera,y=557;
@@ -472,7 +482,10 @@
     TrailScenery.back(ctx,sceneryView);
     ctx.save();ctx.translate(0,verticalOffset);
     // Faint silhouette layers sit behind the playable platform, preserving gaps.
-    for(const s of game.platforms){TrailScenery.ledgeShadow(ctx,game.level.id,s,game.camera,game.platforms);platform(arrival&&s.kind==='ground'&&s.x+s.w===game.level.width?{...s,w:s.w+W}:s,theme,t);}
+    for(const s of game.platforms){
+      if(s.kind==='reward'){TrailItemArt.block(ctx,s,game.camera,game.time,reducedMotion.matches);continue;}
+      TrailScenery.ledgeShadow(ctx,game.level.id,s,game.camera,game.platforms);platform(arrival&&s.kind==='ground'&&s.x+s.w===game.level.width?{...s,w:s.w+W}:s,theme,t);
+    }
     for(const c of game.checkpoints)flag(c.x,c.active,t);
     flag(game.level.width-145,true,t,true);
     if(arrival)campLight(arrival,finale.elapsed);
@@ -501,10 +514,17 @@
       sprite('cat',game.cat.x,game.cat.y,40,Math.floor(walk)%12,game.cat.facing);
       const opacity=game.respawnDelay?Math.max(0,game.respawnDelay/.65):p.invulnerable>0&&Math.floor(t*12)%2?.4:1;
       sprite(game.character.sprite,p.x+p.w/2,p.y+p.h+p.sink*14,94,frame,p.facing,opacity);
+      TrailItemArt.aura(ctx,p,game.effects,game.camera,game.time,reducedMotion.matches);
       const handX=p.x+p.w/2-game.camera+p.facing*16,handY=p.y+48;
       line(handX-p.facing*3,handY+9,handX+p.facing*13,handY-2,'#8b7651',3);ellipse(handX+p.facing*14,handY-3,4,4,game.weapon.color);
     }
     for(let i=particles.length-1;i>=0;i--){const a=particles[i];a.life-=dt;a.x+=a.vx*dt;a.y+=a.vy*dt;a.vy+=100*dt;if(a.life<=0){particles.splice(i,1);continue;}ctx.globalAlpha=Math.min(1,a.life*2);ellipse(a.x-game.camera,a.y,a.r,a.r,a.color);ctx.globalAlpha=1;}
+    for(let i=rewardPops.length-1;i>=0;i--){
+      const pop=rewardPops[i];if(game.status==='playing')pop.age+=dt;
+      if(pop.age>=1.1){rewardPops.splice(i,1);continue;}
+      ctx.save();ctx.globalAlpha=Math.min(1,(1.1-pop.age)*3);
+      TrailItemArt.icon(ctx,pop.reward,pop.x-game.camera,pop.y-25-(reducedMotion.matches?0:Math.min(1,pop.age/.45)*25),30);ctx.restore();
+    }
     TrailScenery.front(ctx,{...sceneryView,height:H-verticalOffset});
     ctx.restore();
     const shade=ctx.createLinearGradient(0,0,0,120);shade.addColorStop(0,'#0d2e243f');shade.addColorStop(1,'#0d2e2400');ctx.fillStyle=shade;ctx.fillRect(0,0,W,120);
@@ -513,12 +533,20 @@
     if(renderedCoins!==game.collected){$('coins').textContent=`◉ ${String(game.collected).padStart(2,'0')}`;renderedCoins=game.collected;}
     $('progressFill').style.width=`${TrailCore.clamp(p.x/(game.level.width-200)*100,0,100)}%`;
     battleHUD();
+    if(game.status==='playing')rewardNoticeLeft=Math.max(0,rewardNoticeLeft-dt);
+    $('rewardNotice').hidden=game.status!=='playing'||rewardNoticeLeft<=0;
     if(finale.active)arrivalOverlay(arrival);
     if(toastUntil<visualTime)$('toast').classList.remove('show');
   }
   function handleEvents(){
     for(const e of game.events.splice(0)){
       sound(e.type);
+      if(e.type==='reward'){
+        const label=e.reward==='heal'?(e.healed?'治疗花 · 恢复 1 颗心':'治疗花 · 生命已满，金币 +5'):e.reward==='coins'?'金叶奖励 · 金币 +5':e.reward==='shield'?'护盾果 · 8 秒内抵挡一次伤害':'磁力萤石 · 吸引金币 10 秒';
+        $('rewardNotice').textContent=label;rewardNoticeLeft=2.8;
+        rewardPops.push({reward:e.reward,x:e.x,y:e.y,age:0});saveJourney();
+      }
+      if(e.type==='shield'){$('rewardNotice').textContent='护盾已挡住伤害';rewardNoticeLeft=1.8;saveJourney();}
       if(e.type==='checkpoint')toast('检查点已点亮 · 生命已恢复，进度已保存');
       if(e.type==='bossAwake')toast(`${game.encounter.boss} · 留意蓄力，跳跃躲避`,2.4);
       if(e.type==='bossPhase')toast('守望者进入第二阶段 · 攻击更频繁',2);

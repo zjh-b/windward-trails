@@ -14,7 +14,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'qa'
 THEMES = ['grassland', 'forest', 'alpine', 'lagoon', 'desert', 'cavern']
-SOURCE_FILES = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js'] + [f'assets/{theme}.mp3' for theme in THEMES]
+SOURCE_FILES = ['index.html', 'style.css', 'combat.js', 'items.js', 'core.js', 'scenery.js', 'finale.js', 'item-art.js', 'game.js', 'assets/sprites.js'] + [f'assets/{theme}.mp3' for theme in THEMES]
 CAPTURE = '''(() => {
  let core;
  Object.defineProperty(window, 'TrailCore', {
@@ -196,7 +196,8 @@ def mobile_check(browser,url,errors,resources,checks,landscape=False):
     cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[right,jump,fire]})
     page.wait_for_timeout(150)
     jumping=state(page)
-    assert jumping['x']>before['x']+40 and jumping['vy']<0,(before,jumping)
+    # A valid jump may already have hit the first solid reward block's underside.
+    assert jumping['x']>before['x']+40 and jumping['y']<before['y']-20,(before,jumping)
     assert page.evaluate('window.__qaGame.weapon.ammo')<8
     cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[right]})
     page.wait_for_timeout(120)

@@ -22,22 +22,28 @@
         <div class="hud-center"><div id="levelName">01 / 日光草原</div><small id="activeCharacter"></small><div class="progress"><i id="progressFill"></i></div></div>
         <button id="pause" class="pause" aria-label="暂停游戏">Ⅱ</button>
         <div class="ammo-hud"><div><span id="weaponName">风种</span><strong id="ammoCount">6 / 6</strong></div><div id="ammoPips" class="ammo-pips" aria-hidden="true"></div><small id="reloadStatus">F 射击 · E 换弹</small></div>
+        <div id="itemHud" class="item-hud" hidden aria-label="当前道具效果">
+          <div id="shieldEffect" class="item-effect" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c3 3 6 3 8 3l-1 9c-1 4-4 6-7 8-3-2-6-4-7-8L4 5c2 0 5 0 8-3Z"/><path d="M12 7v10m-4-7 4 4 4-4"/></svg><span>护盾<strong data-time></strong></span></div>
+          <div id="magnetEffect" class="item-effect magnet-effect" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 7 7-2 10-7 3-5-9 2-8Z"/><path d="m9 7 5 4-3 6M2 5v5m20 4v5"/></svg><span>磁力<strong data-time></strong></span></div>
+        </div>
       </div>
       <div id="bossHud" class="boss-hud" hidden><div><strong id="bossName"></strong><span id="bossPhase"></span></div><div class="boss-track"><i id="bossHealth"></i></div></div>
       <div id="trapStatus" class="trap-status" hidden aria-live="polite"></div>
       <div id="toast" class="toast" aria-live="polite"></div>
+      <div id="rewardNotice" class="reward-notice" hidden role="status" aria-live="polite"></div>
       <div id="intro" class="intro">
-        <div class="intro-copy"><p class="eyebrow">守望之境 / THE WATCHERS</p><h1>风野奇旅<span>六段风景，新的挑战。</span></h1><p class="intro-desc">越过沼泽与流沙，唤醒风种与星火。<br>带上白猫，击败守望者，打开通往营地的路。</p>
+        <div class="intro-copy"><h1>风野奇旅<span>六段风景，新的挑战。</span></h1><p class="intro-desc">越过沼泽与流沙，唤醒风种与星火。<br>带上白猫，击败守望者，打开通往营地的路。</p>
           <div class="character-picker" aria-label="选择人物"><p class="picker-label">谁来领路 <span>三位旅伴，各有所长</span></p><div id="characterOptions" class="character-options"></div><p id="characterDescription" aria-live="polite"></p></div>
           <button id="start" class="primary" disabled>正在准备旅程… <span>→</span></button>
           <button id="continueJourney" class="continue-journey" hidden></button>
+          <p class="item-guide"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="2"/><path d="M11 10a3 3 0 0 1 6 0c0 3-3 2-3 5m0 3v1"/></svg><span><strong>跳起来，顶一下问号方块</strong>金币、治疗花或限时道具，随机相遇。</span></p>
           <p class="keyboard-hint"><kbd>← →</kbd> 移动 <kbd>Space</kbd> 跳跃 <kbd>F</kbd> 射击 <kbd>E</kbd> 换弹</p>
         </div>
         <div class="level-picker" aria-label="选择起始关卡"><p>从这里出发 <span id="mapProgress">六处风景，随心选择</span></p><div id="levelOptions" class="level-options"></div><p id="mapDescription" class="map-description" aria-live="polite"></p></div>
         <div class="intro-foot"><span>跃过险境，让微光成为力量</span><span>6 位 Boss · 特色陷阱 · 本机进度续玩</span></div>
       </div>
       <div id="modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <div class="modal-card"><p id="modalKicker" class="eyebrow"></p><h2 id="modalTitle"></h2><p id="modalText"></p><div id="modalStats" class="stats"></div><div id="modalActions" class="modal-actions"></div></div>
+        <div class="modal-card"><p id="modalKicker" hidden></p><h2 id="modalTitle"></h2><p id="modalText"></p><div id="modalStats" class="stats"></div><div id="modalActions" class="modal-actions"></div></div>
       </div>
       <div id="finale" class="finale" hidden aria-label="抵达营地动画">
         <div id="finaleCaption" class="finale-caption" aria-live="polite"><h2 id="finaleTitle"></h2><p id="finaleText"></p></div>
@@ -50,6 +56,6 @@
   </main>
   <footer class="page-foot"><span>躲避陷阱 · 留意蓄力 · 击败 Boss 后抵达营地</span><span>空弹夹自动换弹 <b>·</b> R 重开本关</span></footer>
   </div>
-  <script src="assets/sprites.js"></script><script src="combat.js"></script><script src="core.js"></script><script src="scenery.js"></script><script src="finale.js"></script><script src="game.js"></script>
+  <script src="assets/sprites.js"></script><script src="combat.js"></script><script src="items.js"></script><script src="core.js"></script><script src="scenery.js"></script><script src="finale.js"></script><script src="item-art.js"></script><script src="game.js"></script>
 </body>
 </html>
