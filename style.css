@@ -5,6 +5,10 @@
 button{-webkit-tap-highlight-color:transparent}.level-choice .thumb{background-size:auto 145%;background-position:center top}@media(max-width:520px) and (orientation:portrait){.stage{aspect-ratio:3/5}}
 
 /* The wider world: keep the original green-and-cream travel journal. */
+.game-app{width:100%;height:100dvh;min-height:0;display:flex;flex-direction:column}
+#fullscreen{display:flex;align-items:center;justify-content:center;gap:7px;min-width:44px;min-height:44px;padding:0 10px}
+#fullscreen svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#screenLabel{font-size:12px;white-space:nowrap}
 .intro{padding:4.5% 5.5%;background:linear-gradient(90deg,#122c26f5 0%,#163a2be0 37%,#143b2566 100%)}
 .intro-copy{width:44%}
 h1{font-size:clamp(32px,4vw,62px);margin-bottom:16px}
@@ -80,6 +84,17 @@ button:focus-visible{position:relative;z-index:2}
 @media(prefers-reduced-motion:reduce){button,.toast{transition:none}.primary:hover,.level-choice:hover{transform:none}}
 
 /* Combat stays readable without covering the route ahead. */
+.finale{position:absolute;inset:0;pointer-events:none;color:#fff2cf}
+.finale-caption{position:absolute;top:39%;left:8%;right:8%;text-align:center;opacity:0;text-shadow:0 2px 14px #10272acc}
+.finale-caption h2{font-size:clamp(24px,3vw,42px);font-weight:500;letter-spacing:.12em;margin:0 0 14px}
+.finale-caption p{font-size:clamp(12px,1.2vw,16px);line-height:1.8;color:#f2e6c4;margin:0}
+.skip-finale{pointer-events:auto;position:absolute;right:24px;bottom:56px;min-height:44px;padding:10px 17px;border:1px solid #e4d79c80;background:#152c27ed;color:#f8efce;border-radius:5px;font-size:13px}
+.skip-finale span{margin-left:16px;color:#d3ddb6}
+.skip-finale:hover{background:#314d3c}
+.skip-finale:focus-visible{position:absolute;outline:2px solid #f8df9c;outline-offset:4px}
+.ending .toast,.ending .play-hint,.ending .boss-hud,.ending .trap-status{display:none}
+@media(max-width:650px) and (orientation:portrait){.finale-caption{top:38%;left:5%;right:5%}.finale-caption h2{font-size:25px;letter-spacing:.06em}.skip-finale{bottom:56px;right:16px}}
+@media(orientation:landscape) and (max-height:600px){.finale-caption{top:36%}.finale-caption h2{font-size:25px;margin-bottom:7px}.skip-finale{bottom:32px;right:16px;min-height:40px;padding:8px 14px}}
 .continue-journey{display:block;background:transparent;border:1px solid #d4dfaa60;border-radius:5px;padding:10px 14px;margin-top:10px;font-size:12px;color:#e0e8ca;text-align:left;max-width:100%}
 .continue-journey:hover{background:#ffffff12}
 .ammo-hud{position:absolute;top:65px;left:0;display:grid;grid-template-columns:auto auto;gap:5px 14px;padding:9px 14px;border-radius:9px;background:#172d27d9;border:1px solid #ffffff25;font-size:12px}
@@ -114,3 +129,45 @@ button:focus-visible{position:relative;z-index:2}
   .touch-controls{padding:0 14px;bottom:10px}.touch-direction,.touch-actions{gap:8px}.touch-controls button{width:48px;height:48px}.touch-controls .touch-jump{width:57px;height:57px;font-size:12px}.touch-controls .touch-run{left:14px;bottom:56px;width:104px;height:32px}.touch-controls .touch-reload{right:14px;bottom:66px;width:113px;height:32px}
   .trap-status{bottom:90px;font-size:11px}.toast{top:40%;font-size:10px}
 }
+
+/* A deliberate mobile landscape view, including browsers with no orientation API.
+   Rotate the complete app so DOM touch targets and canvas share one coordinate space. */
+body.landscape-mode .game-app{position:fixed;inset:0;width:100dvw;height:100dvh;max-width:none;z-index:5;background:#101e1b}
+body.landscape-rotated .game-app{inset:auto;left:50%;top:50%;width:100dvh;height:100dvw;transform:translate(-50%,-50%) rotate(90deg);transform-origin:center}
+.landscape-mode .appbar{height:44px;min-height:44px;padding:0 max(12px,env(safe-area-inset-left),env(safe-area-inset-top));gap:12px}
+.landscape-mode .brand{font-size:15px;letter-spacing:1px}.landscape-mode .brand small{display:none}
+.landscape-mode .tools{gap:0}.landscape-mode .tools button{padding:0 9px;min-height:44px}
+.landscape-mode .shell{padding:0;overflow:hidden}.landscape-mode .page-foot{display:none}
+.landscape-mode .stage,.landscape-mode .stage.playing{height:100%;width:100%;max-height:none;max-width:none;aspect-ratio:auto;border:0;border-radius:0}
+.landscape-mode .intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 26px;align-content:start;align-items:start;padding:20px 28px;overflow-y:auto;touch-action:pan-y}
+.landscape-mode .intro-copy{width:100%;min-width:0}.landscape-mode h1{font-size:30px;letter-spacing:3px;margin:0 0 12px}
+.landscape-mode h1 span{font-size:16px;margin-top:7px}.landscape-mode .eyebrow{font-size:11px;margin-bottom:9px}
+.landscape-mode .intro-desc{font-size:11px;line-height:1.6;margin:0 0 10px}
+.landscape-mode .character-choice{padding:6px 4px;gap:5px}.landscape-mode .character-portrait{height:44px}
+.landscape-mode .character-copy strong{font-size:12px}.landscape-mode .character-copy small{font-size:11px;margin-top:4px}
+.landscape-mode #characterDescription{font-size:11px;margin:8px 0 10px;min-height:0}
+.landscape-mode .primary{min-width:0;width:100%;padding:11px 14px;font-size:12px}
+.landscape-mode .level-picker{position:static;inset:auto;transform:none;width:100%;margin:0;min-width:0}
+.landscape-mode .level-options{gap:8px}.landscape-mode .level-choice .thumb{aspect-ratio:2.2;margin-bottom:6px}
+.landscape-mode .level-choice strong,.landscape-mode .level-choice .map-record{font-size:11px;padding:0 6px}
+.landscape-mode .level-picker>p{font-size:11px;margin:0 0 12px}.landscape-mode .level-picker>.map-description{font-size:11px;margin-top:9px}
+.landscape-mode .intro-foot{position:static;grid-column:1/-1;margin:0;font-size:11px}.landscape-mode .intro-foot span:last-child{display:none}
+.landscape-mode .keyboard-hint{display:none}.landscape-mode .hud{inset:10px 14px auto}
+.landscape-mode .hud-left{padding:6px 10px;gap:10px}.landscape-mode #hearts{font-size:16px}.landscape-mode .coin-count{font-size:12px;min-width:40px}
+.landscape-mode .hud-center{top:0;font-size:11px}.landscape-mode #activeCharacter{font-size:11px;margin-top:4px}
+.landscape-mode .progress{width:100px;margin-top:7px}.landscape-mode .pause{width:36px;height:36px;min-height:36px}
+.landscape-mode .ammo-hud{top:45px;padding:6px 10px;font-size:11px;gap:3px 10px}
+.landscape-mode #reloadStatus{font-size:11px}.landscape-mode #ammoPips{font-size:11px;padding-bottom:3px}
+.landscape-mode .boss-hud{top:65px;left:50%;right:auto;transform:translateX(-50%);width:260px;padding:7px 12px}
+.landscape-mode .boss-hud>div:first-child{display:flex;font-size:11px}.landscape-mode #bossPhase{font-size:11px;margin:0}
+.landscape-mode .touch-controls{bottom:12px;padding:0 max(16px,env(safe-area-inset-left),env(safe-area-inset-top))}
+.landscape-mode .touch-direction,.landscape-mode .touch-actions{gap:9px}.landscape-mode .touch-controls button{width:48px;height:48px}
+.landscape-mode .touch-controls .touch-fire{width:50px;height:50px;font-size:12px}.landscape-mode .touch-controls .touch-jump{width:58px;height:58px;font-size:12px;transform:none}
+.landscape-mode .touch-controls .touch-run{left:max(16px,env(safe-area-inset-left),env(safe-area-inset-top));bottom:62px;width:104px;height:35px}
+.landscape-mode .touch-controls .touch-reload{right:max(16px,env(safe-area-inset-right));bottom:70px;width:126px;height:35px}
+.landscape-mode .trap-status{bottom:100px;font-size:11px}.landscape-mode .toast{top:30%;font-size:11px}
+.landscape-mode .modal{padding:10px}.landscape-mode .modal-card{padding:16px 22px;width:360px;max-width:95%;max-height:100%;overflow:auto}
+.landscape-mode .modal-card h2{font-size:23px;margin:8px 0}.landscape-mode .modal-card p:not(.eyebrow){font-size:11px;line-height:1.6;margin:7px 0}
+.landscape-mode .modal-actions{margin-top:10px;gap:6px}.landscape-mode .modal-actions button{padding:9px}.landscape-mode .stats{margin-top:10px;padding-top:10px}.landscape-mode .stat strong{font-size:20px}
+.landscape-mode .finale-caption{top:36%}.landscape-mode .finale-caption h2{font-size:25px;margin-bottom:7px}
+.landscape-mode .skip-finale{bottom:32px;right:16px;min-height:44px;padding:8px 14px}

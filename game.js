@@ -7,6 +7,9 @@
   let W=1280,dpr=1,ready=false,selected=0,previousStatus='menu',last=0,accumulator=0,visualTime=0,walk=0,toastUntil=0,helpReturn='menu',helpOpen=false;
   const keys=new Set(),touch=new Map();let jumpQueued=false,reloadQueued=false,touchRun=false,lastSave=0,lastRender=0;
   const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
+  const mobileScreen=matchMedia('(pointer:coarse)');
+  let landscapeMode=false,landscapeFullscreen=false,orientationRequest=0;
+  const finale=new TrailFinale.Finale();let presentationPaused=false;
   const images={},particles=[];
   let renderedHearts=-1,renderedCoins=-1,renderedAmmo='',renderedTrap='';
   const themes={
@@ -140,6 +143,20 @@
       save(`windward-best-${game.index}`,Math.max(bestCoins(game.index),game.collected));
       save(`windward-complete-${game.index}`,'1');
     }
+    const terminal=state==='levelComplete'||state==='won';
+    if(!terminal)finale.reset();
+    if(terminal&&!finale.input){
+      const p=game.player;
+      finale.start({final:state==='won',reduced:reducedMotion.matches,heroX:p.x+p.w/2,heroY:p.y+p.h,
+        catX:game.cat.x,catY:game.cat.y,goalX:game.level.width-145,camera:game.camera});
+      clearInput();particles.length=0;$('toast').classList.remove('show');
+      $('finaleTitle').textContent=state==='won'?'一起抵达远方':`${game.level.name} · 已抵达`;
+      $('finaleText').textContent=state==='won'?'每一处微光，都成了旅途的记忆。':'风停在营地，下一段风景正在等你。';
+      requestAnimationFrame(()=>$('skipFinale').focus());
+    }
+    const arrival=terminal&&!finale.finished;
+    $('finale').hidden=!arrival;$('stage').classList.toggle('ending',arrival);
+    if(arrival){$('hud').hidden=true;updateChoices();syncSound();previousStatus=state;return;}
     if(state==='paused')modal('TAKE A BREATH','在这里歇一会儿','风景会等你，白猫也是。',[],[['继续旅程',resume],['重新开始本关',retry],['返回选关',home]]);
     if(state==='gameOver')modal('TRY AGAIN','再试一次吧','路上的小失误，也是冒险的一部分。',[[game.collected,'本次金币'],[formatTime(game.elapsed),'用时']],[['重试本关',retry],['返回选关',home]]);
     if(state==='levelComplete'){
@@ -153,20 +170,60 @@
   }
   function showHelp(){
     if(helpOpen)return;helpOpen=true;
+    $('finale').hidden=true;
     helpReturn=game.status;if(game.status==='playing')game.status='paused';previousStatus=game.status;clearInput();syncSound();saveJourney();
     modal('HOW TO WANDER','向远方，轻轻一跃','A / D 或 ← / → 移动，空格 / W / ↑ 跳跃，Shift 奔跑。\nF / J 按住射击，E 换弹；空弹夹自动补充，备用弹药不限。\n射击朝向角色面朝的方向，平台可以挡住弹丸。\n跳过荆棘、沼泽和流沙；发亮的陷阱与守卫正在蓄力。\n首次点亮检查点恢复生命。击败 Boss 后才能进入终点。\nEsc / P 暂停，R 重开。主菜单可继续上次旅程。',[],[['知道了，出发',closeHelp]]);
   }
   function closeHelp(){game.status=helpReturn;syncUI();if(game.status==='playing'){unlockAudio();canvas.focus();}else if(game.status==='menu')$('help').focus();}
   $('start').onclick=()=>begin();$('home').onclick=home;$('help').onclick=showHelp;
+  function skipFinale(){if(!finale.active||helpOpen)return;finale.skip();syncUI();}
+  $('skipFinale').onclick=skipFinale;
+  reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches&&finale.active)skipFinale();});
   $('continueJourney').onclick=continueJourney;
   $('touchRun').onclick=()=>{touchRun=!touchRun;syncRun();};
   $('touchReload').onclick=()=>{reloadQueued=true;unlockAudio();};
   $('pause').onclick=()=>{clearInput();game.pause();syncUI();};
   $('sound').onclick=()=>{muted=!muted;save('windward-muted',muted?'1':'0');unlockAudio();};
-  $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('stage').requestFullscreen();}catch{toast('当前浏览器暂不支持全屏');}};
+  function syncScreenMode(){
+    document.body.classList.toggle('landscape-mode',landscapeMode);
+    document.body.classList.toggle('landscape-rotated',landscapeMode&&innerHeight>innerWidth);
+    const label=mobileScreen.matches?(landscapeMode?'退出横屏':'横屏玩'):(document.fullscreenElement?'退出全屏':'全屏显示');
+    $('screenLabel').textContent=label;$('fullscreen').setAttribute('aria-label',label);
+    $('fullscreen').title=label;$('fullscreen').setAttribute('aria-pressed',String(landscapeMode||!!document.fullscreenElement));
+    requestAnimationFrame(resize);
+  }
+  async function leaveLandscape(exitFullscreen=true){
+    landscapeMode=false;orientationRequest++;syncScreenMode();
+    try{screen.orientation?.unlock?.();}catch{/* Native orientation may be unavailable. */}
+    const owned=landscapeFullscreen;landscapeFullscreen=false;
+    if(exitFullscreen&&owned&&document.fullscreenElement)try{await document.exitFullscreen();}catch{/* The page layout has already been restored. */}
+  }
+  async function enterLandscape(){
+    const request=++orientationRequest;landscapeMode=true;syncScreenMode();
+    // Page landscape is immediately usable even when the browser rejects native APIs.
+    if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
+      try{
+        await document.documentElement.requestFullscreen();
+        if(request!==orientationRequest||!landscapeMode){if(document.fullscreenElement)await document.exitFullscreen();return;}
+        landscapeFullscreen=true;
+      }catch{/* Keep the explicit page-landscape layout when fullscreen is denied. */}
+    }
+    if(request!==orientationRequest||!landscapeMode)return;
+    if(screen.orientation?.lock)try{
+      await screen.orientation.lock('landscape');
+      if(request!==orientationRequest||!landscapeMode)screen.orientation.unlock();
+    }catch{/* Screen orientation lock is optional; page landscape remains available. */}
+    syncScreenMode();
+  }
+  $('fullscreen').onclick=async()=>{
+    if(mobileScreen.matches){if(landscapeMode)await leaveLandscape();else await enterLandscape();return;}
+    try{if(document.fullscreenElement)await document.exitFullscreen();else await $('stage').requestFullscreen();}catch{toast('当前浏览器暂不支持全屏');}
+    syncScreenMode();
+  };
   const jumpKeys=['Space','ArrowUp','KeyW'];
   addEventListener('keydown',e=>{
     if(e.ctrlKey||e.metaKey||e.altKey)return;
+    if(finale.active&&!helpOpen&&['Enter','Space','Escape'].includes(e.code)){e.preventDefault();skipFinale();return;}
     if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&game.status==='playing')e.preventDefault();
     if(e.repeat)return;
     if(e.code==='Escape'||e.code==='KeyP'){
@@ -179,8 +236,9 @@
     keys.add(e.code);if(jumpKeys.includes(e.code))jumpQueued=true;if(e.code==='KeyE')reloadQueued=true;
   });
   addEventListener('keyup',e=>keys.delete(e.code));
-  function loseFocus(){clearInput();if(game.status==='playing'){game.pause();syncUI();}}
-  addEventListener('blur',loseFocus);document.addEventListener('visibilitychange',()=>{if(document.hidden)loseFocus();});
+  function loseFocus(){presentationPaused=true;clearInput();if(game.status==='playing'){game.pause();syncUI();}}
+  addEventListener('focus',()=>{presentationPaused=false;});
+  addEventListener('blur',loseFocus);document.addEventListener('visibilitychange',()=>{if(document.hidden)loseFocus();else presentationPaused=false;});
   addEventListener('pagehide',saveJourney);
   canvas.addEventListener('pointerdown',()=>{if(game.status==='playing')canvas.focus();});
   for(const button of document.querySelectorAll('[data-control]')){
@@ -194,8 +252,12 @@
     else if(!e.shiftKey&&document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0].focus();}
   });
   function controls(){const t=[...touch.values()];return{axis:Number(keys.has('ArrowRight')||keys.has('KeyD')||t.includes('right'))-Number(keys.has('ArrowLeft')||keys.has('KeyA')||t.includes('left')),run:touchRun||keys.has('ShiftLeft')||keys.has('ShiftRight'),jumpPressed:jumpQueued,jumpHeld:jumpKeys.some(k=>keys.has(k))||t.includes('jump'),fire:keys.has('KeyF')||keys.has('KeyJ')||t.includes('fire'),reloadPressed:reloadQueued};}
-  function resize(){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;const ratio=r.width/r.height;W=Math.max(640,Math.round(ratio*720));H=W/ratio;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
-  new ResizeObserver(resize).observe(canvas);addEventListener('fullscreenchange',resize);
+  function resize(){const width=canvas.clientWidth,height=canvas.clientHeight;if(!width||!height)return;const ratio=width/height;W=Math.max(640,Math.round(ratio*720));H=W/ratio;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);}
+  new ResizeObserver(resize).observe(canvas);
+  document.addEventListener('fullscreenchange',()=>{if(landscapeMode&&landscapeFullscreen&&!document.fullscreenElement)leaveLandscape(false);syncScreenMode();});
+  addEventListener('resize',syncScreenMode);addEventListener('orientationchange',syncScreenMode);
+  mobileScreen.addEventListener('change',syncScreenMode);window.visualViewport?.addEventListener('resize',syncScreenMode);
+  syncScreenMode();
 
   function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,Math.max(.01,rx),Math.max(.01,ry),0,0,Math.PI*2);ctx.fill();}
   function line(x1,y1,x2,y2,color,width=1){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
@@ -338,18 +400,57 @@
     const message=game.status==='playing'?(game.player.trap==='quicksand'?`流沙下陷 ${Math.round(game.player.sink*100)}% · 跳跃脱离`:game.player.trap==='swamp'?'沼泽减速 · 跳跃脱离':''):'';
     if(message!==renderedTrap){renderedTrap=message;$('trapStatus').hidden=!message;$('trapStatus').textContent=message;}
   }
+  function campLight(s,t){
+    const x=game.level.width-107-game.camera,y=557;
+    ctx.save();ctx.globalAlpha=s.lantern*.8;
+    const g=ctx.createRadialGradient(x,y,2,x,y,110);g.addColorStop(0,'#ffe5a875');g.addColorStop(.45,'#f6c97822');g.addColorStop(1,'#f6c97800');
+    ctx.fillStyle=g;ctx.fillRect(x-110,y-110,220,150);
+    if(!s.reduced)for(let i=0;i<22;i++){
+      const rise=(t*27+i*17)%135,xx=x+Math.sin(i*2.1+t*.7)*(.2+rise/135)*60;
+      ctx.globalAlpha=s.lantern*(1-rise/135)*.8;ellipse(xx,y-rise,1.7,2.1,'#ffe9a5');
+    }
+    ctx.restore();
+  }
+  function arrivalOverlay(s){
+    ctx.save();
+    if(s.final){
+      ctx.fillStyle=`rgba(9,28,32,${s.route*.48})`;ctx.fillRect(0,0,W,H);
+      const names=['草浪','古树','云海','潮声','落日','萤晶'],colors=['#d2df95','#a3c996','#e1edf0','#a4e3d6','#f2c994','#b4eee7'];
+      const points=names.map((_,i)=>({x:W*(.17+i*.132),y:H*.24-Math.sin(i/5*Math.PI)*Math.min(55,H*.08)}));
+      ctx.lineWidth=1.5;ctx.strokeStyle='#e9dda23b';ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+      const route=s.route*5;
+      for(let i=0;i<5;i++){
+        const f=TrailCore.clamp(route-i,0,1);if(f<=0)continue;
+        line(points[i].x,points[i].y,points[i].x+(points[i+1].x-points[i].x)*f,points[i].y+(points[i+1].y-points[i].y)*f,'#f1dfa5',2);
+      }
+      points.forEach((p,i)=>{
+        const alpha=TrailCore.clamp(route-i+1,0,1);ctx.globalAlpha=alpha;
+        ellipse(p.x,p.y,5,5,colors[i]);ellipse(p.x,p.y,1.6,1.6,'#fff8dd');
+        ctx.fillStyle='#f3edd7';ctx.font='14px "Microsoft YaHei",sans-serif';ctx.textAlign='center';ctx.fillText(names[i],p.x,p.y+29);
+      });
+      ctx.textAlign='left';ctx.globalAlpha=1;
+    }
+    const bar=Math.min(42,H*.055)*s.letterbox;ctx.fillStyle='#0d2026';ctx.fillRect(0,0,W,bar);ctx.fillRect(0,H-bar,W,bar);
+    $('finaleCaption').style.opacity=String(s.title);
+    ctx.restore();
+  }
   function render(dt){
     const p=game.player,theme=themes[game.level.id],t=reducedMotion.matches?0:visualTime;
-    const target=TrailCore.clamp(p.x-W*.36,0,game.level.width-W);
+    const arrival=finale.input?finale.sample():null;
+    const target=arrival?finale.input.camera+(game.level.width-W*.76-finale.input.camera)*arrival.pan:TrailCore.clamp(p.x-W*.36,0,game.level.width-W);
     if(game.status==='menu')game.camera=0;
     else if(Math.abs(game.camera-target)>900&&p.invulnerable>1.4)game.camera=target;
     else game.camera+=(target-game.camera)*(1-Math.exp(-dt*6));
     background(theme,t);
-    ctx.save();ctx.translate(0,Math.max(0,H-720)*.55);
+    const verticalOffset=Math.max(0,H-720)*.55;
+    const sceneryView={id:game.level.id,camera:game.camera,width:W,height:H,time:t,reduced:reducedMotion.matches,horizon:570+verticalOffset};
+    TrailScenery.back(ctx,sceneryView);
+    ctx.save();ctx.translate(0,verticalOffset);
     // Faint silhouette layers sit behind the playable platform, preserving gaps.
-    for(const s of game.platforms)platform(s,theme,t);
+    for(const s of game.platforms){TrailScenery.ledgeShadow(ctx,game.level.id,s,game.camera,game.platforms);platform(arrival&&s.kind==='ground'&&s.x+s.w===game.level.width?{...s,w:s.w+W}:s,theme,t);}
     for(const c of game.checkpoints)flag(c.x,c.active,t);
     flag(game.level.width-145,true,t,true);
+    if(arrival)campLight(arrival,finale.elapsed);
     sign(220,'营地在前方 →');
     if(game.index===0)sign(650,'空格 · 轻轻一跃');
     if(game.index===1)sign(610,'树根会随风移动');
@@ -364,8 +465,14 @@
     if(game.status==='playing'&&!game.respawnDelay)walk+=Math.abs(p.vx)*dt*.055;
     const frame=p.grounded?Math.floor(walk)%12:5;
     if(game.status==='menu'){sprite(game.character.sprite,W*.48+game.camera,570,112,Math.floor(t*4)%12,1);sprite('cat',W*.48-72+game.camera,570,43,Math.floor(t*4)%12,1);}
-    else{
-      ellipse(p.x+p.w/2-game.camera,p.y+p.h+2,20,3,'#26352830');
+    else if(arrival){
+      TrailScenery.shadow(ctx,game.level.id,arrival.heroX-game.camera,570,1.15);
+      TrailScenery.shadow(ctx,game.level.id,arrival.catX-game.camera,570,.58,arrival.catHop);
+      sprite('cat',arrival.catX,arrival.catY-arrival.catHop,40,arrival.frame,1);
+      sprite(game.character.sprite,arrival.heroX,arrival.heroY,94,arrival.frame,1);
+    }else{
+      TrailScenery.shadow(ctx,game.level.id,p.x+p.w/2-game.camera,p.y+p.h+2,1,Math.max(0,500-p.y));
+      TrailScenery.shadow(ctx,game.level.id,game.cat.x-game.camera,game.cat.y,.5);
       sprite('cat',game.cat.x,game.cat.y,40,Math.floor(walk)%12,game.cat.facing);
       const opacity=game.respawnDelay?Math.max(0,game.respawnDelay/.65):p.invulnerable>0&&Math.floor(t*12)%2?.4:1;
       sprite(game.character.sprite,p.x+p.w/2,p.y+p.h+p.sink*14,94,frame,p.facing,opacity);
@@ -373,6 +480,7 @@
       line(handX-p.facing*3,handY+9,handX+p.facing*13,handY-2,'#8b7651',3);ellipse(handX+p.facing*14,handY-3,4,4,game.weapon.color);
     }
     for(let i=particles.length-1;i>=0;i--){const a=particles[i];a.life-=dt;a.x+=a.vx*dt;a.y+=a.vy*dt;a.vy+=100*dt;if(a.life<=0){particles.splice(i,1);continue;}ctx.globalAlpha=Math.min(1,a.life*2);ellipse(a.x-game.camera,a.y,a.r,a.r,a.color);ctx.globalAlpha=1;}
+    TrailScenery.front(ctx,{...sceneryView,height:H-verticalOffset});
     ctx.restore();
     const shade=ctx.createLinearGradient(0,0,0,120);shade.addColorStop(0,'#0d2e243f');shade.addColorStop(1,'#0d2e2400');ctx.fillStyle=shade;ctx.fillRect(0,0,W,120);
     if(game.respawnDelay>0){ctx.fillStyle=`rgba(92,37,23,${Math.min(.12,game.respawnDelay*.18)})`;ctx.fillRect(0,0,W,H);}
@@ -380,6 +488,7 @@
     if(renderedCoins!==game.collected){$('coins').textContent=`◉ ${String(game.collected).padStart(2,'0')}`;renderedCoins=game.collected;}
     $('progressFill').style.width=`${TrailCore.clamp(p.x/(game.level.width-200)*100,0,100)}%`;
     battleHUD();
+    if(finale.active)arrivalOverlay(arrival);
     if(toastUntil<visualTime)$('toast').classList.remove('show');
   }
   function handleEvents(){
@@ -402,8 +511,9 @@
       accumulator+=dt;
       while(accumulator>=1/120){const input=controls();game.step(1/120,input);jumpQueued=false;reloadQueued=false;accumulator-=1/120;}
       handleEvents();if(previousStatus!==game.status)syncUI();
+      if(finale.active){finale.update(dt,presentationPaused||helpOpen);if(finale.finished)syncUI();}
       if(game.status==='playing'&&now-lastSave>2000){saveJourney();lastSave=now;}
-      if(game.status==='playing'||now-lastRender>=32){render(Math.min(.1,(now-lastRender)/1000||dt));lastRender=now;}
+      if(game.status==='playing'||finale.active||now-lastRender>=32){render(Math.min(.1,(now-lastRender)/1000||dt));lastRender=now;}
     }
     requestAnimationFrame(frame);
   }

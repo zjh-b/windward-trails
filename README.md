@@ -1,16 +1,24 @@
-# 风野奇旅 · 守望之境（v3）
+# 风野奇旅 · 守望之境（v4.1 光影与归途）
 
 一款基于森林、高山、草原短片美术制作的原创横版平台小游戏。现在可选择三位旅行者，与白猫穿越六处风景：日光草原、古树秘径、云上山脊、潮汐群岛、落日沙海、萤晶洞窟。
+
+v4 为六张地图增加分层环境装饰、主题光色、柔和投影、近景植物和岩石，以及营地抵达演出。普通关卡约 4 秒；最终关约 7 秒，旅人与白猫抵达旗帜后，六处风景的微光连成旅途路线，再显示原有成绩。按 Enter、空格、Esc 或点击“跳过动画”可立即查看成绩。系统开启“减少动态效果”时采用约 1 秒的短淡入，不移动演出角色。离开窗口会暂停演出，返回后继续；声音沿用原开关。
+
+演出仅改变画面，不移动真实玩家或白猫，不增加金币，也不消耗关卡用时；碰撞、战斗和存档沿用原规则。新增景物是装饰，不是可站立的平台。六处微光代表游戏的六张地图，不表示中途选关时已完成全部关卡。
 
 ## 直接试玩
 
 [在线开始游戏](https://zjh-b.github.io/windward-trails/) · [GitHub 源码仓库](https://github.com/zjh-b/windward-trails)
+
+本包为 v4.1；在线版是否已更新，以部署完成后的页面为准。
 
 完整解压文件夹后，双击 **index.html**。不需要安装库，也不需要联网，推荐使用电脑上的 Edge 或 Chrome。
 
 也可双击 `Start Game.cmd`，或运行 `python run_game.py`。启动器会在本机空闲端口启动服务并打开浏览器；关闭服务窗口即可结束。只有这种启动方式需要 Python，游戏本身可直接离线打开。
 
 ## 操作和目标
+
+手机竖屏打开时，点击右上角 **横屏玩**，然后横握手机。浏览器允许时进入原生全屏并请求横向；不支持时会切换为页面横屏，触屏按钮随画面一起旋转。点击同一位置的 **退出横屏** 可恢复原布局，也可以直接转动手机继续使用普通响应式画面。
 
 | 操作 | 按键 |
 | --- | --- |
@@ -82,6 +90,8 @@
 - `core.js`：关卡数据、物理、碰撞、金币、敌人和状态。
 - `combat.js`：地图陷阱、守卫与 Boss、双方弹丸、弹夹和换弹。
 - `game.js`：Canvas 渲染、输入、音效、菜单和状态反馈。
+- `scenery.js`：六种主题的远近景、缓存光束、局部光池和角色/平台投影。
+- `finale.js`：独立通关画面时间轴，不改动物理或成绩状态。
 - `index.html`、`style.css`：游戏界面与响应式布局。
 - `assets/`：已烘焙的背景、角色图集和声音，独立试玩所需素材均在这里。
 - `export_assets.py`、`pack_assets.py`：素材再生成脚本。
@@ -90,9 +100,13 @@
 - `tests/`：机制测试与真实浏览器操作测试；`qa/`：截图和验证记录。
 - `DESIGN.md`、`PLAN.md`、`EXPANSION.md`：设计与实现记录。
 
-开发验证：`node --test tests/core.test.cjs tests/combat.test.cjs`。浏览器验证需要 Python Playwright 与已安装的 Chromium，运行 `python tests/browser_qa.py` 和 `python tests/browser_traps.py`，会自动启动并清理临时本地服务。测试包含六关真实键盘战斗通关、换弹与存档恢复、选择记忆、离线素材加载，以及手机竖屏和横屏多指操作；陷阱测试通过真实按键走入沼泽和流沙，再跳跃脱离。纯机制测试覆盖全部 18 种人物与地图组合。
+开发验证：`node --test tests/core.test.cjs tests/combat.test.cjs tests/presentation.test.cjs`。浏览器验证需要 Python Playwright 与已安装的 Chromium，运行 `python tests/browser_qa.py` 和 `python tests/browser_traps.py`，会自动启动并清理临时本地服务。测试包含六关真实键盘战斗通关、换弹与存档恢复、选择记忆、离线素材加载，以及手机竖屏和横屏多指操作；陷阱测试通过真实按键走入沼泽和流沙，再跳跃脱离。纯机制测试覆盖全部 18 种人物与地图组合。
 
-浏览器测试通过后运行 `python package_game.py`，会检查 JavaScript、机制测试、启动器和资源，生成上级目录中的 `windward_trails_game_v3.zip`。验证记录及文件校验值保存在 `qa/verification.json`。旧版 ZIP 保留。
+浏览器测试通过后运行 `python package_game.py`，会检查 JavaScript、机制测试、启动器和资源，生成上级目录中的 `windward_trails_game_v4_1.zip`。验证记录及文件校验值保存在 `qa/verification.json`。旧版 ZIP 保留。
+
+v4.1 打包前还需运行 `python tests/browser_presentation.py`：覆盖键盘焦点与跳过按钮位置、自然结束、演出期间物理/成绩冻结、帮助与失焦中断、手机触屏跳过、减少动态和离线加载。演出专项测试会准备终点附近状态后触发真实通关判定，完整六关仍由上面的真实键盘流程验收，两者各自记录结果。
+
+`python tests/performance_presentation.py` 可在没有其他浏览器测试同时运行时，对比本机 HEAD 旧版与当前版本的绘制频率。`python tests/capture_finale.py` 可录制实际浏览器演出，输出上级 `output_game_v4/finale-preview.mp4`；这是演出预览，不是六关过程录像。
 
 ## 重新制作素材
 

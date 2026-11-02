@@ -1,0 +1,64 @@
+{
+  "environment": "Headless Chromium, desktop 1280x800, 0.7s warmup and 2.2s samples; same local HTTP origin",
+  "baseline_commit": "43eac74146d98437923117e84c2b69a706356d80",
+  "samples": [
+    {
+      "draws": 133,
+      "seconds": 2.210699999999255,
+      "hidden": false,
+      "version": "v3",
+      "level": 0,
+      "draws_per_second": 60.16
+    },
+    {
+      "draws": 133,
+      "seconds": 2.21,
+      "hidden": false,
+      "version": "v3",
+      "level": 1,
+      "draws_per_second": 60.18
+    },
+    {
+      "draws": 133,
+      "seconds": 2.209400000002235,
+      "hidden": false,
+      "version": "v3",
+      "level": 5,
+      "draws_per_second": 60.2
+    },
+    {
+      "draws": 133,
+      "seconds": 2.217300000000745,
+      "hidden": false,
+      "version": "v4",
+      "level": 0,
+      "draws_per_second": 59.98
+    },
+    {
+      "draws": 133,
+      "seconds": 2.217199999999255,
+      "hidden": false,
+      "version": "v4",
+      "level": 1,
+      "draws_per_second": 59.99
+    },
+    {
+      "draws": 133,
+      "seconds": 2.2173999999985097,
+      "hidden": false,
+      "version": "v4",
+      "level": 5,
+      "draws_per_second": 59.98
+    }
+  ],
+  "source_sha256": {
+    "index.html": "250a50ef06e3c4fefaf968598e6491f82d0f03d9d4a43f3ed249403c4ebebc24",
+    "style.css": "c7ce66284b10daf3e0fafd3ed754ad9136b1c61671ae08a28741554cbd6b114e",
+    "combat.js": "75d2628c6793e695fa1ebae5611cb6b7a228bda6f907480bc78c537791066c7d",
+    "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
+    "scenery.js": "0ef472072490eddde30bf1a45ce374f840f0ba7bfe8daa40e13b869e9dd9df39",
+    "finale.js": "4bffb2a5d2b28cb4c228a63765c7e7c08867ecc71e1263b3ce44c220bfa5a8ae",
+    "game.js": "f8ac2dd1178d2e614d45964dc763278592c9c900529b67ab3da6b839827c32b6",
+    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
+  }
+}

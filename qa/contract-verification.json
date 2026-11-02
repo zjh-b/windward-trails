@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "contract_only": true,
+  "verified_at_utc": "2026-11-02T05:31:37.091834+00:00",
+  "checks": [
+    "six map selectors, three characters and ability description"
+  ],
+  "console_errors": [],
+  "resource_errors": [],
+  "failure": null,
+  "source_sha256": {
+    "index.html": "250a50ef06e3c4fefaf968598e6491f82d0f03d9d4a43f3ed249403c4ebebc24",
+    "style.css": "308c7c5cf89884e14d6d04c66e2ffef8b6fa63c683b108ccdf3775f0eae5645b",
+    "combat.js": "75d2628c6793e695fa1ebae5611cb6b7a228bda6f907480bc78c537791066c7d",
+    "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
+    "game.js": "2f03c86a8b82b08c2f03aa688a5d4cafe543e1f092e733d251c86bd70b567ade",
+    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
+  }
+}

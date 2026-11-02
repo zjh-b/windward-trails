@@ -1,7 +1,7 @@
 {
   "passed": true,
   "contract_only": false,
-  "verified_at_utc": "2026-11-01T16:03:27.059101+00:00",
+  "verified_at_utc": "2026-11-02T06:45:35.548544+00:00",
   "checks": [
     "six map selectors, three characters and ability description",
     "character/map persistence, ability description, direct sixth-map entry and corrupt preference/Infinity record fallback",
@@ -12,13 +12,13 @@
       "keyboard_completed_stage": 0,
       "state": {
         "status": "levelComplete",
-        "x": 4400.388888888873,
+        "x": 4401.722222222166,
         "y": 500,
         "vy": 0,
         "grounded": true,
         "hearts": 3,
-        "coins": 41,
-        "time": 19.36666666666621,
+        "coins": 43,
+        "time": 16.116666666666394,
         "index": 0,
         "character": "hero"
       }
@@ -27,13 +27,13 @@
       "keyboard_completed_stage": 1,
       "state": {
         "status": "levelComplete",
-        "x": 4400.388888888834,
+        "x": 4400.592278881337,
         "y": 500,
         "vy": 0,
         "grounded": true,
         "hearts": 3,
-        "coins": 43,
-        "time": 19.449999999999537,
+        "coins": 40,
+        "time": 18.708333333332913,
         "index": 1,
         "character": "hero"
       }
@@ -42,13 +42,13 @@
       "keyboard_completed_stage": 2,
       "state": {
         "status": "levelComplete",
-        "x": 4402.388888888836,
+        "x": 4401.722222222166,
         "y": 500,
         "vy": 0,
         "grounded": true,
         "hearts": 3,
-        "coins": 40,
-        "time": 18.40833333333293,
+        "coins": 39,
+        "time": 16.649999999999697,
         "index": 2,
         "character": "hero"
       }
@@ -57,13 +57,13 @@
       "keyboard_completed_stage": 3,
       "state": {
         "status": "levelComplete",
-        "x": 4200.388888888836,
+        "x": 4201.034722222171,
         "y": 500,
         "vy": 0,
         "grounded": true,
         "hearts": 2,
         "coins": 46,
-        "time": 26.15833333333249,
+        "time": 26.491666666665804,
         "index": 3,
         "character": "hero"
       }
@@ -72,13 +72,13 @@
       "keyboard_completed_stage": 4,
       "state": {
         "status": "levelComplete",
-        "x": 4701.722222222256,
+        "x": 4702.388888888916,
         "y": 500,
         "vy": 0,
         "grounded": true,
-        "hearts": 2,
-        "coins": 41,
-        "time": 26.808333333332452,
+        "hearts": 3,
+        "coins": 40,
+        "time": 23.70833333333263,
         "index": 4,
         "character": "hero"
       }
@@ -87,13 +87,13 @@
       "keyboard_completed_stage": 5,
       "state": {
         "status": "won",
-        "x": 5001.055555555645,
+        "x": 5001.722222222306,
         "y": 500,
         "vy": 0,
         "grounded": true,
         "hearts": 3,
-        "coins": 51,
-        "time": 24.274999999999263,
+        "coins": 50,
+        "time": 23.07499999999933,
         "index": 5,
         "character": "hero"
       }
@@ -176,11 +176,13 @@
   "resource_errors": [],
   "failure": null,
   "source_sha256": {
-    "index.html": "1b57417c342fa9e8afda5d7be9a93c9649b9c4a9f32d869ca23a979b5250aa4f",
-    "style.css": "9e42d11e379ebc293bfdd5553446bff590725eb4124d541d33255c04e4a33e5c",
+    "index.html": "0ccfeac454b18d7bfba3acc65d6b5ffeefc1263fdb4b85b0b93f8760f2624a38",
+    "style.css": "0c9328b24239197afdc5c82afecdfa353530568794a9cef68fc661f9590697c7",
     "combat.js": "75d2628c6793e695fa1ebae5611cb6b7a228bda6f907480bc78c537791066c7d",
     "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
-    "game.js": "419ef976437cd4e4f7e7bd3c27fb30ac5c5f750073e3e780f3b40bcca98fbafb",
+    "scenery.js": "0ef472072490eddde30bf1a45ce374f840f0ba7bfe8daa40e13b869e9dd9df39",
+    "finale.js": "4bffb2a5d2b28cb4c228a63765c7e7c08867ecc71e1263b3ce44c220bfa5a8ae",
+    "game.js": "ff669825842efa430ce4572a37bed619f292d413d522caabc7072adf82e98b7a",
     "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
   }
 }

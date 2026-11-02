@@ -10,7 +10,7 @@ from urllib.request import urlopen
 from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parent
-ARCHIVE = ROOT.parent / 'windward_trails_game_v3.zip'
+ARCHIVE = ROOT.parent / 'windward_trails_game_v4_1.zip'
 
 
 def main():
@@ -21,15 +21,21 @@ def main():
     assert not browser.get('resource_errors'), 'Browser resource loading failed.'
     traps = json.loads((ROOT / 'qa/traps-verification.json').read_text(encoding='utf-8'))
     assert traps['passed'] and len(traps['checks']) == 2, 'Verify swamp and quicksand in the browser.'
-    for name in ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'assets/sprites.js']:
+    presentation=json.loads((ROOT/'qa/presentation-verification.json').read_text(encoding='utf-8'))
+    assert presentation['passed'] and not presentation['console_errors'], 'Run presentation QA first.'
+    orientation=json.loads((ROOT/'qa/orientation-verification.json').read_text(encoding='utf-8'))
+    assert orientation['passed'] and not orientation['console_errors'], 'Run portrait-to-landscape QA first.'
+    for name in ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js']:
         actual = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
         assert browser.get('source_sha256', {}).get(name) == actual, f'Rerun browser QA after changing {name}'
         assert traps.get('source_sha256', {}).get(name) == actual, f'Rerun trap QA after changing {name}'
-    for name in ['combat.js', 'core.js', 'game.js', 'assets/sprites.js']:
+        assert presentation.get('source_sha256', {}).get(name) == actual, f'Rerun presentation QA after changing {name}'
+        assert orientation.get('source_sha256', {}).get(name) == actual, f'Rerun orientation QA after changing {name}'
+    for name in ['combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js']:
         subprocess.run(['node', '--check', name], cwd=ROOT, check=True, capture_output=True)
-    core = subprocess.run(['node', '--test', 'tests/core.test.cjs', 'tests/combat.test.cjs'], cwd=ROOT,
+    core = subprocess.run(['node', '--test', 'tests/core.test.cjs', 'tests/combat.test.cjs', 'tests/presentation.test.cjs'], cwd=ROOT,
                           check=True, capture_output=True, encoding='utf-8')
-    required = ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'run_game.py',
+    required = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'run_game.py',
                 'assets/hero.png', 'assets/ranger.png', 'assets/mage.png', 'assets/cat.png', 'assets/sprites.js']
     for theme in ['grassland', 'forest', 'alpine']:
         required.extend([f'assets/bg-{theme}.jpg', f'assets/{theme}.mp3'])
@@ -57,13 +63,14 @@ def main():
         server.terminate()
         server.wait(timeout=5)
 
-    top = ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'README.md', 'DESIGN.md', 'IMPROVEMENTS.md',
+    top = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'README.md', 'DESIGN.md', 'IMPROVEMENTS.md',
            'PLAN.md', 'run_game.py', 'Start Game.cmd', 'export_assets.py',
            'pack_assets.py', 'package_game.py', 'EXPANSION.md', 'export_expansion.py', 'pack_expansion.py',
            '.gitignore', '.nojekyll']
     files = [ROOT / name for name in top]
     files += sorted(p for p in (ROOT / 'assets').iterdir() if p.is_file())
     files += sorted(p for p in (ROOT / 'tests').iterdir() if p.is_file())
+    files += sorted((ROOT / 'docs').rglob('*.md'))
     files += sorted(p for p in (ROOT / 'qa').iterdir()
                     if p.is_file() and p.name not in ['verification.json', 'contract-verification.json']
                     and not p.name.startswith('failure-') and '-precheck' not in p.name
@@ -75,6 +82,8 @@ def main():
         'javascript_syntax': 'passed',
         'python_launcher_http_and_asset': 'passed',
         'browser': browser,
+        'presentation': presentation,
+        'orientation': orientation,
         'archive': ARCHIVE.name,
         'sha256': {str(p.relative_to(ROOT)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest()
                    for p in files},

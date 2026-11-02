@@ -14,7 +14,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'qa'
 THEMES = ['grassland', 'forest', 'alpine', 'lagoon', 'desert', 'cavern']
-SOURCE_FILES = ['index.html', 'style.css', 'combat.js', 'core.js', 'game.js', 'assets/sprites.js']
+SOURCE_FILES = ['index.html', 'style.css', 'combat.js', 'core.js', 'scenery.js', 'finale.js', 'game.js', 'assets/sprites.js']
 CAPTURE = '''(() => {
  let core;
  Object.defineProperty(window, 'TrailCore', {
@@ -96,7 +96,7 @@ def drive_stage(page,index,checks):
     try:
         while time.monotonic()<deadline:
             decision=page.evaluate('''() => {const g=window.__qaGame,p=g.player,d=window.__qaDecision(g);
-              return {status:g.status,vy:p.vy,grounded:p.grounded,axis:d.axis,
+              return {status:g.status,x:p.x,y:p.y,time:g.time,vy:p.vy,cut:p.cut,grounded:p.grounded,axis:d.axis,
                 jump:d.jumpPressed,boss:g.boss.active&&g.boss.hp>0&&g.boss.x-p.x<550&&p.grounded};}''')
             if decision['status']!='playing':
                 break
@@ -105,9 +105,13 @@ def drive_stage(page,index,checks):
             for key in wanted-held: page.keyboard.down(key)
             held=wanted
             if jump_held and decision['vy']>=0:
+                if index==3 and decision['x']>3500:print('LAGOON_JUMP_RELEASE',decision,flush=True)
+                if decision['grounded']:
+                    print('JUMP_RELEASE_WHILE_GROUNDED',index,decision,flush=True)
                 page.keyboard.up('Space')
                 jump_held=False
             if decision['jump'] and not jump_held:
+                if index==3 and decision['x']>3500:print('LAGOON_JUMP_PRESS',decision,flush=True)
                 page.keyboard.down('Space')
                 jump_held=True
             if decision['boss'] and not boss_captured:
@@ -120,6 +124,7 @@ def drive_stage(page,index,checks):
     result=state(page)
     expected='won' if index==len(THEMES)-1 else 'levelComplete'
     assert result['status']==expected,{'stage':index,'expected':expected,'state':result}
+    page.wait_for_selector('#modal:not([hidden])',timeout=15000)
     checks.append({'keyboard_completed_stage':index,'state':result})
     page.screenshot(path=str(OUT/f'completed-{index}.png'))
     print('STAGE_OK',index,flush=True)

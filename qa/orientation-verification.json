@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "verified_at_utc": "2026-11-02T06:29:09.243827+00:00",
+  "checks": [
+    "portrait phone: explicit entry; no fullscreen/lock API; rotated wide canvas; real move/jump/fire touch",
+    "same page: physical viewport rotates, exits and re-enters cleanly; touch controls stay inside viewport",
+    "native fullscreen denied and orientation lock rejected: landscape page still works and exits",
+    "desktop retains real fullscreen entry and exit"
+  ],
+  "console_errors": [],
+  "resource_errors": [],
+  "source_sha256": {
+    "index.html": "0ccfeac454b18d7bfba3acc65d6b5ffeefc1263fdb4b85b0b93f8760f2624a38",
+    "style.css": "0c9328b24239197afdc5c82afecdfa353530568794a9cef68fc661f9590697c7",
+    "combat.js": "75d2628c6793e695fa1ebae5611cb6b7a228bda6f907480bc78c537791066c7d",
+    "core.js": "7ef6141d5701549a62961e928c027f0468f3c37a14a11cd83adeda37f9a84f3a",
+    "scenery.js": "0ef472072490eddde30bf1a45ce374f840f0ba7bfe8daa40e13b869e9dd9df39",
+    "finale.js": "4bffb2a5d2b28cb4c228a63765c7e7c08867ecc71e1263b3ce44c220bfa5a8ae",
+    "game.js": "ff669825842efa430ce4572a37bed619f292d413d522caabc7072adf82e98b7a",
+    "assets/sprites.js": "503a2a1d94535ffc6babbc703f5552c6796c0d01a90d79328d3e07f1c727e0d4"
+  }
+}
